@@ -6,15 +6,30 @@
 
 //Function to check patient login
 void PatientLogin();
-
 //Fucntion to check doctor login
 void DoctorLogin();
-
 //Function to check Admin login
 void AdminLogin();
-
 //function to clear creen
 void clear();
+//function for doctor menu
+void DoctorMenu();
+//function for admin menu
+void AdminMenu();
+//function for patient menu
+void PatientMenu();
+//function to manage pharmacy 
+void PharmacyManagement();
+//function to manage bills
+void BillManage();
+//function to manage doctors detail
+void DoctorManage();
+//function to manage patient details
+void PatientManage();
+//function to generate report
+void GenerateReport();
+
+
 
 
 int main()
