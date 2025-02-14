@@ -3,9 +3,9 @@ a.name
 b.age
 c.phone
 d.email
+g.gender
 e.address
 f.blood group
-g.gender
 
 2.table to store doctor detail
 a.name
@@ -13,8 +13,8 @@ b.age
 c.phone
 d.email
 e.gender
-f.specialization
 e.experience
+f.specialization
 
 3.table to store pharmacy detail
 4.table to store services and fee
