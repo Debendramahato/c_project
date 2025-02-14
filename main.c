@@ -10,8 +10,6 @@ void PatientLogin();
 void DoctorLogin();
 //Function to check Admin login
 void AdminLogin();
-//function to clear creen
-void clear();
 //function for doctor menu
 void DoctorMenu();
 //function for admin menu
@@ -28,14 +26,27 @@ void DoctorManage();
 void PatientManage();
 //function to generate report
 void GenerateReport();
+//function to add new entry
+void Add();
+//function to update info
+void Update();
+//function to delete
+void Delete();
+//function to search
+void Search();
+//function to generate reports as pdf
+void GeneratePdf();
+//function to clear creen
+void clear();
 
 
 
 
 int main()
 {
-
-    char choice;
+    sqlite3 *db;
+    char zErrMsg = 0, choice;
+    int rc;
 
     printf("-----------------Who are you?-----------------\n");
     printf("1.Patient\n2.Doctor\n3.Admin\n4.Exit\n");
@@ -65,7 +76,7 @@ int main()
 }
 
 
-// void clear()
-// {
-//     system("clear");
-// }
+void clear()
+{
+    system("clear");
+}
