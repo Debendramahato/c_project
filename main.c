@@ -7,6 +7,9 @@
 #define AdminUser "admin"
 #define AdminPass "admin"
 
+//global variable
+const char* table[3][20] = {"patientdetail", "doctordetail", "authentication"};
+
 //Function to check patient login
 bool PatientLogin();
 //Fucntion to check doctor login
@@ -26,7 +29,7 @@ void BillManage();
 //function to manage doctors detail
 void DoctorManage();
 //function to manage patient details
-void PatientManage(sqlite3 *db);
+void PatientDoctorManage(sqlite3 *db, const char *identify);
 //function to generate report
 void GenerateReport();
 //function to add new entry
@@ -149,7 +152,7 @@ void ExecuteSql(sqlite3 *db, const char *sql)
     char *ErrMsg = NULL;
     int rc;
     //sqlite3_exec(sqlite3 *, const char *sql, int (*callback), void *, char **errmsg);
-    rc = sqlite3_exec(db, sql, 0, 0, &ErrMsg);
+    rc = sqlite3_exec(db, sql, callback, 0, &ErrMsg);
     if(rc != SQLITE_OK)
     {
         printf("SQL err: %s\n", ErrMsg);
@@ -208,11 +211,11 @@ void AdminMenu(sqlite3 *db)
     switch (choice)
     {
     case 1:
-        PatientManage(db);
+        PatientDoctorManage(db, "patient");
         break;
 
     case 2:
-        // DoctorManage();
+        PatientDoctorManage(db, "doctor");
         break;
 
     case 3:
@@ -226,13 +229,13 @@ void AdminMenu(sqlite3 *db)
     }
 }
 
-void PatientManage(sqlite3 *db)
+void PatientDoctorManage(sqlite3 *db, const char *identify)
 {
     int choice;
-    char *identify = "patient";
+    // char *identify = "patient";
     clear();
     printf("Choose what do you want to do?\n");
-    printf("1.Add new patient\n2.Update patient info\n3.Delete Paitent Record\n4.Get Specific Patient\n5.Return Previoud Page\n6.exit\n");
+    printf("1.Add new\n2.Update info\n3.Delete record\n4.Get specific record\n5.Return Previoud Page\n6.exit\n");
     scanf("%d", &choice);
 
     switch (choice)
@@ -242,7 +245,7 @@ void PatientManage(sqlite3 *db)
         break;
 
     case 2:
-        Update(db, identify);
+        // Update(db, identify);//incomplete
         break;
 
     case 3:
@@ -250,7 +253,7 @@ void PatientManage(sqlite3 *db)
         break;
     
     case 4:
-        // Search(db, identify);
+        Search(db, identify);
         break;
 
     case 5:
@@ -267,19 +270,22 @@ void PatientManage(sqlite3 *db)
 
 void Search(sqlite3 *db, const char *identify)
 {
-    // char username[50];
+    char sql[500], username[50];
 
-    // printf("username(email or phone): ");
-    // fgets(username, sizeof(username), stdin);
-    // username[strcspn(username, "\n")] = '\0';
-    // if(identify == 'p')
-    // {
+    printf("usernaem: ");
+    fgets(username, sizeof(username), stdin);
+    username[strcspn(username, "\n")] = '\0';
 
-    // }
-    // else
-    // {
-
-    // }
+    if(strcmp(identify, "patient") == 0)
+    {
+        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';",table[0], username, username);
+        ExecuteSql(db, sql);
+    }
+    else if(strcmp(identify, "doctor") == 0)
+     {
+        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", table[1], username, username);
+        ExecuteSql(db, sql);
+     }  
 }
 
 void Update(sqlite3 *db, const char *identify)
@@ -288,6 +294,7 @@ void Update(sqlite3 *db, const char *identify)
     char username[50], name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
     // getchar();
     printf("Enter username(phone or email): ");
+    getchar();
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = '\0';
     clear();
@@ -323,7 +330,7 @@ void Update(sqlite3 *db, const char *identify)
         fgets(bloodgrp, sizeof(bloodgrp), stdin);
         bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
 
-        sprintf(sql, "UPDATE patientdetail SET name = '%s', age = '%d', bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE '%s' = phone || '%s' = email;", name, age, bloodgrp, gender, phone, email, address);
+        sprintf(sql, "UPDATE patientdetail SET name = '%s', age = '%d', bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone= '%s' OR email = '%s';", name, age, bloodgrp, gender, phone, email, address, username, username);
         ExecuteSql(db, sql);        
     }
     else
@@ -334,18 +341,17 @@ void Update(sqlite3 *db, const char *identify)
         printf("specialization: ");
         fgets(specialization, sizeof(specialization), stdin);
         specialization[strcspn(specialization, "\n")] = '\0';
-        // sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', '%d', '%s', '%s', '%s', '%s', '%s');", name, age, phone, email, gender, experience, specialization);
-        sprintf(sql, "UPDATE doctordetail SET name = '%s', age = '%d', phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE '%s' = phone || '%s' = email;", name, age, phone, email, gender, experience, specialization);
+        sprintf(sql, "UPDATE doctordetail SET name = '%s', age = '%d', phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';", name, age, phone, email, gender, experience, specialization, username, username);
         ExecuteSql(db, sql);
     }
-    sprintf(sqla, "UPDATE authentication SET username1 = '%s', username2 = '%s' WHERE '%s' = phone || '%s' = email;", phone, email);
+    sprintf(sqla, "UPDATE authentication SET username1 = '%s', username2 = '%s' WHERE phone = '%s' OR email = '%s';", phone, email, username, username);
     ExecuteSql(db, sqla);
     
 }
 
 void Add(sqlite3 *db, const char *identify)
 {
-    int more, age, experience;
+    int more, age, experience = 0;
     char name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
     getchar();
     printf("name: ");
@@ -377,19 +383,19 @@ void Add(sqlite3 *db, const char *identify)
         fgets(bloodgrp, sizeof(bloodgrp), stdin);
         bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
 
-        sprintf(sql, "INSERT INTO patientdetail (name, age, bloodgrp, gender, phone, email, address) VALUES ('%s', '%d', '%s', '%s', '%s', '%s', '%s');",name, age, bloodgrp, gender, phone, email, address);
+        sprintf(sql, "INSERT INTO patientdetail (name, age, bloodgrp, gender, phone, email, address) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');",name, age, bloodgrp, gender, phone, email, address);
         ExecuteSql(db, sql);
         
     }
     else
     {
-        printf("address: ");
-        scanf("%d", experience);
+        printf("experience: ");
+        scanf("%d", &experience);
 
         printf("specialization: ");
         fgets(specialization, sizeof(specialization), stdin);
         specialization[strcspn(specialization, "\n")] = '\0';
-        sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', '%d', '%s', '%s', '%s', '%s', '%s');", name, age, phone, email, gender, experience, specialization);
+        sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');", name, age, phone, email, gender, experience, specialization);
         ExecuteSql(db, sql);;
     }
     sprintf(sqla, "INSERT INTO authentication (username1, username2) VALUES ('%s', '%s');", phone, email);
@@ -410,21 +416,26 @@ void Delete(sqlite3 *db, const char *identify)
 
     if(strcmp(identify, "patient") == 0)
     {
-        sprintf(sql, "DELETE FROM patientdetail WHERE '%s' = phone || '%s' = email;", username, username);
+        sprintf(sql, "DELETE FROM patientdetail WHERE phone = '%s' OR email = '%s';", username, username);
         ExecuteSql(db, sql);
     }
     else if(strcmp(identify, "doctor") == 0)
     {
-        sprintf(sql, "DELETE FROM doctordetail WHERE '%s' = phone || '%s' = email;", username, username);
+        sprintf(sql, "DELETE FROM doctordetail WHERE phone = '%s' OR email = '%s';", username, username);
         ExecuteSql(db, sql);
     }
-    sprintf(sql_, "DELETE FROM authentication WHERE '%s' = username1 || '%s' = username2;", username, username);
+    sprintf(sql_, "DELETE FROM authentication WHERE username1 = '%s' OR username2 = '%s';", username, username);
     ExecuteSql(db, sql_);
 }
 
 int callback(void *data, int no_fields, char **field_values, char **field_name)
 {
-    
+    int i;
+    for(i = 0; i < no_fields; i++)
+    {
+        printf("%s: %s\n", field_name[i], field_values[i]?field_values[i]:NULL);
+    }
+    return 0;
 }
 
 void clear()
