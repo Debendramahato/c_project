@@ -44,7 +44,7 @@ void CreateTable(sqlite3 *db);
 //function to execute sql
 void ExecuteSql(sqlite3 *db, const char *sql);
 //function to call back
-int callback(void *data, int no_fields, char **field_values, char **field_name, char *username);
+int callback(void *data, int no_fields, char **field_values, char **field_name);
 //function to clear creen
 void clear();
 
@@ -422,14 +422,9 @@ void Delete(sqlite3 *db, const char *identify)
     ExecuteSql(db, sql_);
 }
 
-int callback(void *data, int no_fields, char **field_values, char **field_name, char *username)
+int callback(void *data, int no_fields, char **field_values, char **field_name)
 {
-    // int i;
-    // for(i = 0; i < no_fields; i++)
-    // {
-    //     if(strcm)
-    //     printf("");
-    // }
+    
 }
 
 void clear()
