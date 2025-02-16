@@ -8,7 +8,7 @@
 #define AdminPass "admin"
 
 //global variable
-const char* table[3][20] = {"patientdetail", "doctordetail", "authentication"};
+const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
 
 //Function to check patient login
 bool PatientLogin();
@@ -245,7 +245,7 @@ void PatientDoctorManage(sqlite3 *db, const char *identify)
         break;
 
     case 2:
-        // Update(db, identify);//incomplete
+        Update(db, identify);//incomplete
         break;
 
     case 3:
@@ -270,22 +270,23 @@ void PatientDoctorManage(sqlite3 *db, const char *identify)
 
 void Search(sqlite3 *db, const char *identify)
 {
-    char sql[500], username[50];
+    char sql[500], username[50], *selected_table;
 
-    printf("usernaem: ");
+    getchar();
+    printf("username: ");
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = '\0';
 
     if(strcmp(identify, "patient") == 0)
     {
-        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';",table[0], username, username);
-        ExecuteSql(db, sql);
+        strcpy(selected_table, table[0]);
     }
     else if(strcmp(identify, "doctor") == 0)
-     {
-        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", table[1], username, username);
-        ExecuteSql(db, sql);
-     }  
+    {
+        strcpy(selected_table, table[1]);
+    }  
+    sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';",table[0], username, username);
+    ExecuteSql(db, sql);
 }
 
 void Update(sqlite3 *db, const char *identify)
@@ -304,21 +305,21 @@ void Update(sqlite3 *db, const char *identify)
     fgets(name, sizeof(name), stdin);
     name[strcspn(name, "\n")] = '\0';
 
-    printf("age: ");
-    scanf("%d", &age);
-    getchar();
+    // printf("age: ");
+    // scanf("%d", &age);
+    // getchar();
 
-    printf("phone: ");
-    fgets(phone, sizeof(phone), stdin);
-    phone[strcspn(phone, "\n")] = '\0';
+    // printf("phone: ");
+    // fgets(phone, sizeof(phone), stdin);
+    // phone[strcspn(phone, "\n")] = '\0';
 
-    printf("email: ");
-    fgets(email, sizeof(email), stdin);
-    email[strcspn(email, "\n")] = '\0';
+    // printf("email: ");
+    // fgets(email, sizeof(email), stdin);
+    // email[strcspn(email, "\n")] = '\0';
     
-    printf("gender: ");
-    fgets(gender, sizeof(gender), stdin);
-    gender[strcspn(gender, "\n")] = '\0';
+    // printf("gender: ");
+    // fgets(gender, sizeof(gender), stdin);
+    // gender[strcspn(gender, "\n")] = '\0';
 
     if(strcmp(identify, "patient") == 0)
     {
@@ -330,7 +331,7 @@ void Update(sqlite3 *db, const char *identify)
         fgets(bloodgrp, sizeof(bloodgrp), stdin);
         bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
 
-        sprintf(sql, "UPDATE patientdetail SET name = '%s', age = '%d', bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone= '%s' OR email = '%s';", name, age, bloodgrp, gender, phone, email, address, username, username);
+        sprintf(sql, "UPDATE patientdetail SET name = '%s', age = %d, bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone = '%s' OR email = '%s';", name, age, bloodgrp, gender, phone, email, address, username, username);
         ExecuteSql(db, sql);        
     }
     else
@@ -341,7 +342,7 @@ void Update(sqlite3 *db, const char *identify)
         printf("specialization: ");
         fgets(specialization, sizeof(specialization), stdin);
         specialization[strcspn(specialization, "\n")] = '\0';
-        sprintf(sql, "UPDATE doctordetail SET name = '%s', age = '%d', phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';", name, age, phone, email, gender, experience, specialization, username, username);
+        sprintf(sql, "UPDATE doctordetail SET name = '%s', age = %d, phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';", name, age, phone, email, gender, experience, specialization, username, username);
         ExecuteSql(db, sql);
     }
     sprintf(sqla, "UPDATE authentication SET username1 = '%s', username2 = '%s' WHERE phone = '%s' OR email = '%s';", phone, email, username, username);
