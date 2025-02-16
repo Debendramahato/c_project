@@ -12,42 +12,52 @@ const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
 
 //Function to check patient login
 bool PatientLogin();
-//Fucntion to check doctor login
-// bool DoctorLogin();
+ 
 //Function to check Admin login
 bool AdminLogin();//completed
-//function for doctor menu
-// void DoctorMenu();
+
 //function for admin menu
 void AdminMenu(sqlite3 *db);
+
 //function for patient menu
 void PatientMenu();
+
 //function to manage pharmacy 
 void PharmacyManage();
+
 //function to manage bills
 void BillManage();
-//function to manage doctors detail
-// void DoctorManage();
+
 //function to manage patient details
-void PatientDoctorManage(sqlite3 *db, const char *identify);
+void PatientDoctorManage(sqlite3 *db, const char *identify);//done
+
 //function to generate report
 void GenerateReport();
+
 //function to add new entry
-void Add(sqlite3 *db, const char *identify);//completed
+void Add(sqlite3 *db, const char *identify);//done
+
 //function to update info
-void Update(sqlite3 *db, const char *identify);
+void Update(sqlite3 *db, const char *identify);//done
+
 //function to delete
-void Delete(sqlite3 *db, const char *identify);
+void Delete(sqlite3 *db, const char *identify);//done
+
 //function to search
-void Search(sqlite3 *db, const char *identify);
+void Search(sqlite3 *db, const char *identify);//done
+
 //function to generate reports as pdf
 void GeneratePdf();
+
 //function to create table
-void CreateTable(sqlite3 *db);
+void CreateTable(sqlite3 *db);//ongoing
+
 //function to execute sql
-void ExecuteSql(sqlite3 *db, const char *sql);
+void ExecuteSql(sqlite3 *db, const char *sql);//done
+
 //function to call back
-int callback(void *data, int no_fields, char **field_values, char **field_name);
+int callback(void *data, int no_fields, char **field_values, char **field_name);//done
+
 //function to clear creen
 void clear();
 
@@ -109,8 +119,6 @@ int main()
 
     return 0;
 }
-
-
 
 void CreateTable(sqlite3 *db)
 {
@@ -291,64 +299,62 @@ void Search(sqlite3 *db, const char *identify)
 
 void Update(sqlite3 *db, const char *identify)
 {
-    // int more, age, experience;
-    // char username[50], name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
-    // // getchar();
-    // printf("Enter username(phone or email): ");
+    int more, age, experience;
+    char username[50], name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
     // getchar();
-    // fgets(username, sizeof(username), stdin);
-    // username[strcspn(username, "\n")] = '\0';
-    // clear();
+    printf("Enter username(phone or email): ");
+    getchar();
+    fgets(username, sizeof(username), stdin);
+    username[strcspn(username, "\n")] = '\0';
+    clear();
     
-    // printf("---------------Enter new deatil---------------\n");
-    // printf("name: ");
-    // fgets(name, sizeof(name), stdin);
-    // name[strcspn(name, "\n")] = '\0';
+    printf("---------------Enter new deatil---------------\n");
+    printf("name: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';
 
-    // printf("age: ");
-    // scanf("%d", &age);
-    // getchar();
+    printf("age: ");
+    scanf("%d", &age);
+    getchar();
 
-    // printf("phone: ");
-    // fgets(phone, sizeof(phone), stdin);
-    // phone[strcspn(phone, "\n")] = '\0';
+    printf("phone: ");
+    fgets(phone, sizeof(phone), stdin);
+    phone[strcspn(phone, "\n")] = '\0';
 
-    // printf("email: ");
-    // fgets(email, sizeof(email), stdin);
-    // email[strcspn(email, "\n")] = '\0';
+    printf("email: ");
+    fgets(email, sizeof(email), stdin);
+    email[strcspn(email, "\n")] = '\0';
     
-    // printf("gender: ");
-    // fgets(gender, sizeof(gender), stdin);
-    // gender[strcspn(gender, "\n")] = '\0';
+    printf("gender: ");
+    fgets(gender, sizeof(gender), stdin);
+    gender[strcspn(gender, "\n")] = '\0';
 
-    // if(strcmp(identify, "patient") == 0)
-    // {
-    //     printf("address: ");
-    //     fgets(address, sizeof(address), stdin);
-    //     address[strcspn(address, "\n")] = '\0';
+    if(strcmp(identify, "patient") == 0)
+    {
+        printf("address: ");
+        fgets(address, sizeof(address), stdin);
+        address[strcspn(address, "\n")] = '\0';
 
-    //     printf("bloodgrp: ");
-    //     fgets(bloodgrp, sizeof(bloodgrp), stdin);
-    //     bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
+        printf("bloodgrp: ");
+        fgets(bloodgrp, sizeof(bloodgrp), stdin);
+        bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
 
-    //     sprintf(sql, "UPDATE patientdetail SET name = '%s', age = %d, bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone = '%s' OR email = '%s';", name, age, bloodgrp, gender, phone, email, address, username, username);
-    //     ExecuteSql(db, sql);        
-    // }
-    // else
-    // {
-    //     printf("address: ");
-    //     scanf("%d", experience);
+        sprintf(sql, "UPDATE patientdetail SET name = '%s', age = %d, bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone = '%s' OR email = '%s';", name, age, bloodgrp, gender, phone, email, address, username, username);
+        ExecuteSql(db, sql);        
+    }
+    else
+    {
+        printf("address: ");
+        scanf("%d", experience);
         
-    //     printf("specialization: ");
-    //     fgets(specialization, sizeof(specialization), stdin);
-    //     specialization[strcspn(specialization, "\n")] = '\0';
-    //     sprintf(sql, "UPDATE doctordetail SET name = '%s', age = %d, phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';", name, age, phone, email, gender, experience, specialization, username, username);
-    //     ExecuteSql(db, sql);
-    // }
-    // sprintf(sqla, "UPDATE authentication SET username1 = '%s', username2 = '%s' WHERE phone = '%s' OR email = '%s';", phone, email, username, username);
-    // ExecuteSql(db, sqla);
-    
-
+        printf("specialization: ");
+        fgets(specialization, sizeof(specialization), stdin);
+        specialization[strcspn(specialization, "\n")] = '\0';
+        sprintf(sql, "UPDATE doctordetail SET name = '%s', age = %d, phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';", name, age, phone, email, gender, experience, specialization, username, username);
+        ExecuteSql(db, sql);
+    }
+    sprintf(sqla, "UPDATE authentication SET username1 = '%s', username2 = '%s' WHERE username1 = '%s' OR username2 = '%s';", phone, email, username, username);
+    ExecuteSql(db, sqla);
     
 }
 
