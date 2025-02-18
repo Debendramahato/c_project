@@ -12,7 +12,7 @@ const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
 const char *services[10] = {"Anesthesiologists", "Cardiologists", "Endocrinologists", "Gastroenterologists", "General surgeons", "Nephrologists", "Neurologists", "Ophthalmologists", "Psychiatrists", "Radiologists"};
 
 //function to check authorize or not for patient and doctor
-bool IsAuthorize(sqlite3 *db, const char *username, const char *password);//done
+int IsAuthorize(sqlite3 *db, const char *username, const char *password);//done
 
 //Function to check patient login
 void PatientDoctorLogin(sqlite3 *db, const char *identify);//done
@@ -104,7 +104,7 @@ int main()
         else
         {
             CreateTable(db);
-            clear();
+            // clear();
         }
     }
 
@@ -498,9 +498,9 @@ void PatientDoctorLogin(sqlite3 *db, const char *identify)
             exit(0);
         }
         printf("username: ");
-        scanf("%s", username);
+        scanf("%49s", username);
         printf("password: ");
-        scanf("%s", password);
+        scanf("%49s", password);
 
         if(IsAuthorize(db, username, password))
         {
@@ -522,10 +522,10 @@ void PatientDoctorLogin(sqlite3 *db, const char *identify)
     } while(!IsAuthorize(db, username, password));   
 }
 
-bool IsAuthorize(sqlite3 *db, const char *username, const char *password)
+int IsAuthorize(sqlite3 *db, const char *username, const char *password)
 {
     sqlite3_stmt *stmt;
-    char *sql;
+    char sql[256], sql_[256], update_pass[256], confirm_pass[256];
     int rc;
 
     sprintf(sql, "SELECT * FROM %s;", table[2]);
@@ -552,7 +552,7 @@ bool IsAuthorize(sqlite3 *db, const char *username, const char *password)
             {
                 if(strcmp(stored_pass, "user@123") == 0)
                 {
-                    char *update_pass, *confirm_pass;
+                    // char *update_pass, *confirm_pass;
                     do{
                         printf("Type new password: ");
                         scanf("%s", update_pass);
@@ -561,16 +561,16 @@ bool IsAuthorize(sqlite3 *db, const char *username, const char *password)
                         clear();
                     }while(strcmp(update_pass, confirm_pass) != 0);
 
-                    char *sql_;
-                    sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[3], confirm_pass, username, username);
+                    // char *sql_;
+                    sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[2], confirm_pass, username, username);
                     ExecuteSql(db, sql_);
                 }
-                return true;
+                return 1;
             }
-            return false;
+            return 0;
         }
     }
-    return false;
+    return 0;
 
 
 }
