@@ -9,6 +9,7 @@
 
 //global variable
 const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
+const char *services[10] = {"Anesthesiologists", "Cardiologists", "Endocrinologists", "Gastroenterologists", "General surgeons", "Nephrologists", "Neurologists", "Ophthalmologists", "Psychiatrists", "Radiologists"};
 
 //function to check authorize or not for patient and doctor
 bool IsAuthorize(sqlite3 *db, const char *username, const char *password);//done
@@ -23,7 +24,16 @@ bool AdminLogin();//done
 void AdminMenu(sqlite3 *db);
 
 //function for patient menu
-void PatientMenu(sqlite3 *db);
+void PatientMenu(sqlite3 *db,  const char *username);
+
+//function to book appointment
+void BookAppointment(sqlite3 *db, int doctor_id, const char *patient_username);
+
+//function to reschedule appointment
+void RescheduleAppointment(sqlite3 *db);
+
+//fucntion to cancel appointment
+void CancelAppointment(sqlite3 *db);
 
 //function for doctor menu
 void DoctorMenu(sqlite3 *db);
@@ -39,6 +49,9 @@ void PatientDoctorManage(sqlite3 *db, const char *identify);//done
 
 //function to generate report
 void GenerateReport();
+
+//function to get all servecies
+void GetAllServices(sqlite3 *db, const char *patient_usr);
 
 //function to add new entry
 void Add(sqlite3 *db, const char *identify);//done
@@ -493,7 +506,7 @@ void PatientDoctorLogin(sqlite3 *db, const char *identify)
         {
             if(strcmp(identify, "patient") == 0)
             {
-                // PatientMenu(db);
+                PatientMenu(db, username);
             }
             else if(strcmp(identify, "doctor") == 0)
             {
@@ -559,6 +572,78 @@ bool IsAuthorize(sqlite3 *db, const char *username, const char *password)
     }
     return false;
 
+
+}
+
+void PatientMenu(sqlite3 *db, const char *username)
+{
+    int choice, doctor_id;
+    char *sql, specialization_[50];
+    printf("Please entry your choice:\n");
+    printf("1.Get self detail\n2.Get all services with doctor\n3.Doctor Detail\n4.Book Appoinment\n5.Reschedule Appointment\n6.Cancel Appointment\n7.Exit");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+    case 1:
+        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", table[0], username, username);
+        ExecuteSql(db, sql);
+        break;
+
+    case 2:
+        GetAllServices(db, username);
+        break;
+
+    case 3:
+        printf("Enter doctor specialization or username of doctor: ");
+        fgets(specialization_, sizeof(specialization_), stdin);
+        specialization_[strcspn(specialization_, "\n")] = '\0';
+        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s' OR specialization = '%s';", table[1], specialization_, specialization_, specialization_);      
+        ExecuteSql(db, sql);
+        break;
+
+    case 4:
+        printf("Enter doctor ID: ");
+        scanf("%d", &doctor_id);
+        // BookAppointment(db, doctor_id, username);
+        break;
+
+    case 5:
+        // RescheduleAppointment(db);
+        break;
+
+    case 6:
+        //CancelAppointment(db);
+        break;
+
+    case 7:
+        sqlite3_close(db);
+        exit(0);
+    }
+}
+
+void GetAllServices(sqlite3 *db, const char *patient_usr)
+{   
+    int i, choice, doctor_id;
+    char *sql, want;
+    printf("We have these services, Please choose any services to get doctor of that particular services\n");
+    for(i = 0; i < 10; i++)
+    {
+        printf("%d.%s\n", i + 1, services[i]);
+    }
+    scanf("%d", &choice);
+    
+    sprintf(sql, "SELECT * FROM %s WHERE specialization = '%s';", table[1], services[choice - 1]);
+    ExecuteSql(db, sql);
+
+    printf("Want to book Appointment (y/n)?\n");
+    scanf("%c", &want);
+    if(want == 'y' || want == 'Y')
+    {
+        printf("Enter Doctor ID: ");
+        scanf("%d", &doctor_id);
+        // BookAppointment(db, doctor_id, patient_usr);
+    }
 
 }
 
