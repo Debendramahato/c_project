@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define AdminUser "admin"
-#define AdminPass "admin"
+// #define AdminUser "admin"
+// #define AdminPass "admin"
 
 //global variable
 const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
