@@ -83,61 +83,61 @@ int callback(void *data, int no_fields, char **field_values, char **field_name);
 //function to clear creen
 void clear();//done
 
-// int main()
-// {
-//     sqlite3 *db;
-//     // char zErrMsg = 0;
-//     int rc, choice;//rc = return code
+int main()
+{
+    sqlite3 *db;
+    // char zErrMsg = 0;
+    int rc, choice;//rc = return code
 
-//     printf("-----------------Who are you?-----------------\n");
-//     printf("1.Patient\n2.Doctor\n3.Admin\n4.Exit\n");
-//     scanf("%d", &choice);
+    printf("-----------------Who are you?-----------------\n");
+    printf("1.Patient\n2.Doctor\n3.Admin\n4.Exit\n");
+    scanf("%d", &choice);
 
-//     rc = sqlite3_open("HMS.db", &db);
-//     if(choice < 4)
-//     {
-//         if(rc != SQLITE_OK)
-//         {
-//             printf("Failed to open databese err: %s\n", sqlite3_errmsg(db));
-//             return 1;
-//         }
-//         else
-//         {
-//             CreateTable(db);
-//             // clear();
-//         }
-//     }
-
-
-//     switch (choice)
-//     {
-//     case 1:
-//         PatientDoctorLogin(db, "patient");
-//         break;
-
-//     case 2:
-//         PatientDoctorLogin(db, "doctor");
-//         break;
-
-//     case 3:
-//         if(true/*AdminLogin()*/)
-//         {
-//             AdminMenu(db);
-//         }
-//         else
-//         {
-//             exit(0);
-//         }
-//         break;
-
-//     case 4:
-//         exit(0);
-//         break;
-//     }
+    rc = sqlite3_open("HMS.db", &db);
+    if(choice < 4)
+    {
+        if(rc != SQLITE_OK)
+        {
+            printf("Failed to open databese err: %s\n", sqlite3_errmsg(db));
+            return 1;
+        }
+        else
+        {
+            CreateTable(db);
+            // clear();
+        }
+    }
 
 
-//     return 0;
-// }
+    switch (choice)
+    {
+    case 1:
+        PatientDoctorLogin(db, "patient");
+        break;
+
+    case 2:
+        PatientDoctorLogin(db, "doctor");
+        break;
+
+    case 3:
+        if(true/*AdminLogin()*/)
+        {
+            AdminMenu(db);
+        }
+        else
+        {
+            exit(0);
+        }
+        break;
+
+    case 4:
+        exit(0);
+        break;
+    }
+
+
+    return 0;
+}
 
 void CreateTable(sqlite3 *db)
 {
