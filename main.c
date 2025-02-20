@@ -9,7 +9,7 @@
 
 //global variable
 sqlite3 *db;
-const char* table[4] = {"patientdetail", "doctordetail", "authentication", "appointmentdetail"};
+const char* table[5] = {"patientdetail", "doctordetail", "authentication", "appointmentdetail", "medicine"};
 const char *services[10] = {"Anesthesiologists", "Cardiologists", "Endocrinologists", "Gastroenterologists", "General surgeons", "Nephrologists", "Neurologists", "Ophthalmologists", "Psychiatrists", "Radiologists"};
 
 //function to check authorize or not for patient and doctor
@@ -69,31 +69,43 @@ void DoctorMenu(const char *username);//done
 //function to get all servecies
 void GetAllServices(const char *patient_usr);//done
 
+//function to add medicine
+void AddMedicine();//done
 
+//function to view medicine
+void ViewMedicines();//done
 
+//function to remove medicine
+void DeleteMedicine();//done
 
+//function to update medicine stock
+void UpdateStock();//done
 
 //function to manage pharmacy 
-void PharmacyManage();
-
-//function to manage bills
-void BillManage();
-
-//function to generate report
-void GenerateReport();
+void PharmacyManage();//done
 
 //function for patient menu
-void PatientMenu(const char *username);
-
-//function to generate reports as pdf
-void GeneratePdf();
+void PatientMenu(const char *username);//done
 
 //function to create table
-void CreateTable();//ongoing
+void CreateTable();//done
 
 //function for admin menu
-void AdminMenu();
+void AdminMenu();//done
 
+
+
+
+
+//function to manage bills
+// void BillManage();
+
+//function to generate report
+// void GenerateReport();
+
+
+//function to generate reports as pdf
+// void GeneratePdf();
 
 
 
@@ -157,7 +169,7 @@ int main()
 
 void CreateTable()
 {
-    const char *patient_table, *doctor_table, *appointment_table, *user_pass;
+    const char *patient_table, *doctor_table, *appointment_table, *user_pass, *medicine;
     
     patient_table = "CREATE TABLE IF NOT EXISTS patientdetail("
                     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -194,11 +206,18 @@ void CreateTable()
                 "username1 TEXT NOT NULL,"
                 "username2 TEXT NOT NULL,"
                 "password TEXT DEFAULT 'user@123');";
+
+    medicine = "CREATE TABLE IF NOT EXISTS medicine("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                "name TEXT NOT NULL,"
+                "quantity INTEGER NOT NULL,"
+                "price REAL NOT NULL);";
     
 
     ExecuteSql(patient_table);
     ExecuteSql(doctor_table);
     ExecuteSql(user_pass);
+    ExecuteSql(appointment_table);
 }
 
 void ExecuteSql(const char *sql)
@@ -273,7 +292,7 @@ void AdminMenu()
         break;
 
     case 3:
-        // PharmacyManage();
+        PharmacyManage();
         break;
 
     case 4:
@@ -425,7 +444,7 @@ void Update(const char *identify)
 
 void Add(const char *identify)
 {
-    int more, age, experience = 0;
+    int more, age, experience;
     char name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
     getchar();
     printf("name: ");
@@ -446,7 +465,6 @@ void Add(const char *identify)
     printf("gender: ");
     fgets(gender, sizeof(gender), stdin);
     gender[strcspn(gender, "\n")] = '\0';
-
     if(strcmp(identify, "patient") == 0)
     {
         printf("address: ");
@@ -465,12 +483,14 @@ void Add(const char *identify)
     {
         printf("experience: ");
         scanf("%d", &experience);
+        getchar();
 
         printf("specialization: ");
         fgets(specialization, sizeof(specialization), stdin);
-        specialization[strcspn(specialization, "\n")] = '\0';
-        sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');", name, age, phone, email, gender, experience, specialization);
+        specialization[strcspn(specialization, "\n")] = 0;
+        sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');", name, age, phone, email, gender, experience, specialization);
         ExecuteSql(sql);;
+        printf("Added successfully!\n");
     }
     sprintf(sqla, "INSERT INTO authentication (username1, username2) VALUES ('%s', '%s');", phone, email);
     ExecuteSql(sqla);
@@ -766,6 +786,118 @@ void CancelAppointment(const char *patient_username)
     ExecuteSql(sql);
     printf("Appointment calcel successfully\n");
     PatientMenu(patient_username);
+}
+
+void PharmacyManage()
+{
+    int choice;
+    do {
+        printf("\nPharmacy Management System\n");
+        printf("1. Add Medicine\n");
+        printf("2. View Medicines\n");
+        printf("3. Update Stock\n");
+        printf("4. Delete Medicine\n");
+        printf("5. Exit\n");
+        printf("Choose an option: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                AddMedicine(); 
+                break;
+            case 2:
+                ViewMedicines(); 
+                break;
+            case 3:
+                UpdateStock();
+                break;
+            case 4:
+                DeleteMedicine();
+                break;
+            case 5:
+                printf("Exiting...\n");
+                break;
+            default:
+            printf("Invalid choice!\n");
+        }
+    } while (choice != 5);
+}
+
+void AddMedicine()
+{
+    char name[50], sql[256];
+    int quantity;
+    float price;
+
+    printf("Enter medicine name: ");
+    scanf("%s", name);
+    printf("Enter quantity: ");
+    scanf("%d", &quantity);
+    printf("Enter price: ");
+    scanf("%f", &price);
+
+    snprintf(sql, sizeof(sql), 
+             "INSERT INTO medicine (name, quantity, price) VALUES ('%s', %d, %.2f);", 
+             name, quantity, price);
+
+    ExecuteSql(sql);
+    printf("Medicine added successfully!\n");
+}
+
+void ViewMedicines() {
+    sqlite3_stmt *stmt;
+    char *sql = "SELECT * FROM medicine;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
+        printf("Failed to fetch medicines.\n");
+        return;
+    }
+
+    printf("\nID | Name        | Quantity | Price\n");
+    printf("------------------------------------\n");
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("%d | %-10s | %d | %.2f\n",
+               sqlite3_column_int(stmt, 0),
+               sqlite3_column_text(stmt, 1),
+               sqlite3_column_int(stmt, 2),
+               sqlite3_column_double(stmt, 3));
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void UpdateStock() {
+    char name[50];
+    int quantity;
+    char sql[256];
+
+    printf("Enter medicine name: ");
+    scanf("%s", name);
+    printf("Enter new quantity: ");
+    scanf("%d", &quantity);
+
+    snprintf(sql, sizeof(sql), 
+             "UPDATE %s SET quantity = %d WHERE name = '%s';", 
+             table[4], quantity, name);
+
+    executeSQL(sql);
+    printf("Stock updated successfully!\n");
+}
+
+void DeleteMedicine() {
+    char name[50];
+    char sql[256];
+
+    printf("Enter medicine name to delete: ");
+    scanf("%s", name);
+
+    snprintf(sql, sizeof(sql), 
+             "DELETE FROM %s WHERE name = '%s';", 
+             table[4], name);
+
+    executeSQL(sql);
+    printf("Medicine deleted successfully!\n");
 }
 
 void clear()
