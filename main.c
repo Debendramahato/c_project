@@ -881,7 +881,7 @@ void UpdateStock() {
              "UPDATE %s SET quantity = %d WHERE name = '%s';", 
              table[4], quantity, name);
 
-    executeSQL(sql);
+    ExecuteSql(sql);
     printf("Stock updated successfully!\n");
 }
 
@@ -896,7 +896,7 @@ void DeleteMedicine() {
              "DELETE FROM %s WHERE name = '%s';", 
              table[4], name);
 
-    executeSQL(sql);
+    ExecuteSql(sql);
     printf("Medicine deleted successfully!\n");
 }
 
