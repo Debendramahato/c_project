@@ -1,26 +1,11 @@
-1.table to store patient detail
-a.name
-b.age
-c.phone
-d.email
-g.gender
-e.address
-f.blood group
+dubug note:
 
-2.table to store doctor detail
-a.name
-b.age
-c.phone
-d.email
-e.gender
-e.experience
-f.specialization
+create table--> okay
+add --> okay
+update --> okay
+delete --> okay
+search by username --> okay
+getall -- okay
+isauthorize --> okay
+patientdoctorlogin --> okay
 
-3.table to store pharmacy detail
-4.table to store services and fee
-5.table to store which doctor should belongs to which patient
-6.table to store billing of patients
-
-7.table to store username and passwords
-a.username
-b.passwords

@@ -130,9 +130,11 @@ int main()
         else
         {
             CreateTable();
-            // clear();
+            clear();
         }
     }
+    
+    // GetAll("patient");
 
 
     switch (choice)
@@ -146,7 +148,7 @@ int main()
         break;
 
     case 3:
-        if(true/*AdminLogin()*/)
+        if(AdminLogin())
         {
             AdminMenu();
         }
@@ -162,7 +164,7 @@ int main()
         exit(0);
         break;
     }
-
+    
 
     return 0;
 }
@@ -198,9 +200,7 @@ void CreateTable()
                     "appointment_date TEXT NOT NULL,"
                     "appointment_time TEXT NOT NULL,"
                     "status TEXT DEFAULT 'scheduled',"
-                    "notes TEXT,"
-                    "FOREGIN KEY (patient_username) REFERENCES patientdetail(phone),"
-                    "FOREGIN KEY (doctor_username) REFERENCES doctordetail(phone));";
+                    "notes TEXT);";
 
     user_pass = "CREATE TABLE IF NOT EXISTS authentication("
                 "username1 TEXT NOT NULL,"
@@ -277,6 +277,7 @@ void AdminMenu()
 {
     int choice;
     
+    clear();
     printf("---------------Welcome Cheif---------------\n");
     printf("What do you want to do?\n");
     printf("1.Manage Patient\n2.Manage Doctor\n3.Manage Pharmacy\n4.exit\n");
@@ -352,7 +353,11 @@ void Search(const char *identify)
     printf("username: ");
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = '\0';
-
+    if(strlen(username) == 0)
+    {
+        printf("Invalid!\n");
+        Search(identify);
+    }
     if(strcmp(identify, "patient") == 0)
     {
         strcpy(selected_table, table[0]);
@@ -363,11 +368,14 @@ void Search(const char *identify)
     }  
     sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", selected_table, username, username);
     ExecuteSql(sql);
+    printf("Hit enter!\n");
+    getchar();
+    PatientDoctorManage(identify);
 }
 
 void GetAll(const char *identify)
 {
-    char *sql, *selected_talble;
+    char sql[100], selected_talble[50];
 
     if(strcmp(identify, "patient") == 0)
     {
@@ -383,143 +391,195 @@ void GetAll(const char *identify)
 
 void Update(const char *identify)
 {
-    int more, age, experience;
+    int more, age, experience, count = 0;
     char username[50], name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sql_[100];
-    // getchar();
-    printf("Enter username(phone or email): ");
-    getchar();
-    fgets(username, sizeof(username), stdin);
-    username[strcspn(username, "\n")] = '\0';
-    clear();
-    
-    printf("---------------Enter new deatil---------------\n");
-    printf("name: ");
-    fgets(name, sizeof(name), stdin);
-    name[strcspn(name, "\n")] = '\0';
-
-    printf("age: ");
-    scanf("%d", &age);
-    getchar();
-
-    printf("phone: ");
-    fgets(phone, sizeof(phone), stdin);
-    phone[strcspn(phone, "\n")] = '\0';
-
-    printf("email: ");
-    fgets(email, sizeof(email), stdin);
-    email[strcspn(email, "\n")] = '\0';
-    
-    printf("gender: ");
-    fgets(gender, sizeof(gender), stdin);
-    gender[strcspn(gender, "\n")] = '\0';
-
-    if(strcmp(identify, "patient") == 0)
+    while(true)
     {
-        printf("address: ");
-        fgets(address, sizeof(address), stdin);
-        address[strcspn(address, "\n")] = '\0';
-
-        printf("bloodgrp: ");
-        fgets(bloodgrp, sizeof(bloodgrp), stdin);
-        bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
-
-        sprintf(sql, "UPDATE %s SET name = '%s', age = %d, bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone = '%s' OR email = '%s';",table[0], name, age, bloodgrp, gender, phone, email, address, username, username);
-        ExecuteSql(sql);        
-    }
-    else
-    {
-        printf("address: ");
-        scanf("%d", experience);
+        if(count > 0)
+        {
+            printf("\nHit enter to exit\n");
+        }
+        printf("Enter username(phone or email): ");
+        getchar();
+        fgets(username, sizeof(username), stdin);
+        username[strcspn(username, "\n")] = '\0';
+        if(strlen(username) == 0 && count > 0)
+        {
+            PatientDoctorManage(identify);
+        }
+        clear();
         
-        printf("specialization: ");
-        fgets(specialization, sizeof(specialization), stdin);
-        specialization[strcspn(specialization, "\n")] = '\0';
-        sprintf(sql, "UPDATE %s SET name = '%s', age = %d, phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';",table[1], name, age, phone, email, gender, experience, specialization, username, username);
-        ExecuteSql(sql);
+        printf("---------------Enter new deatil---------------\n");
+        printf("name: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = '\0';
+
+        printf("age: ");
+        scanf("%d", &age);
+        getchar();
+
+        printf("phone: ");
+        fgets(phone, sizeof(phone), stdin);
+        phone[strcspn(phone, "\n")] = '\0';
+
+        printf("email: ");
+        fgets(email, sizeof(email), stdin);
+        email[strcspn(email, "\n")] = '\0';
+        
+        printf("gender: ");
+        fgets(gender, sizeof(gender), stdin);
+        gender[strcspn(gender, "\n")] = '\0';
+        if(strlen(name) == 0 || strlen(phone) == 0)
+        {
+            clear();
+            printf("Invalid!");
+            Update(identify);
+        }
+        if(strcmp(identify, "patient") == 0)
+        {
+            printf("address: ");
+            fgets(address, sizeof(address), stdin);
+            address[strcspn(address, "\n")] = '\0';
+
+            printf("bloodgrp: ");
+            fgets(bloodgrp, sizeof(bloodgrp), stdin);
+            bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
+
+            sprintf(sql, "UPDATE %s SET name = '%s', age = %d, bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone = '%s' OR email = '%s';",table[0], name, age, bloodgrp, gender, phone, email, address, username, username);
+            ExecuteSql(sql);    
+        }
+        else
+        {
+            printf("address: ");
+            scanf("%d", experience);
+            
+            printf("specialization: ");
+            fgets(specialization, sizeof(specialization), stdin);
+            specialization[strcspn(specialization, "\n")] = '\0';
+            sprintf(sql, "UPDATE %s SET name = '%s', age = %d, phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';",table[1], name, age, phone, email, gender, experience, specialization, username, username);
+            ExecuteSql(sql);
+        }
+        sprintf(sql_, "UPDATE %s SET username1 = '%s', username2 = '%s' WHERE username1 = '%s' OR username2 = '%s';",table[2], phone, email, username, username);
+        ExecuteSql(sql_);
     }
-    sprintf(sql_, "UPDATE %s SET username1 = '%s', username2 = '%s' WHERE username1 = '%s' OR username2 = '%s';",table[2], phone, email, username, username);
-    ExecuteSql(sql_);
     
 }
 
 void Add(const char *identify)
 {
-    int more, age, experience;
+    int more, age, experience, count = 0;
     char name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
     getchar();
-    printf("name: ");
-    fgets(name, sizeof(name), stdin);
-    name[strcspn(name, "\n")] = '\0';
-
-    printf("age: ");
-    scanf("%d", &age);
-    getchar();
-    printf("phone: ");
-    fgets(phone, sizeof(phone), stdin);
-    phone[strcspn(phone, "\n")] = '\0';
-
-    printf("email: ");
-    fgets(email, sizeof(email), stdin);
-    email[strcspn(email, "\n")] = '\0';
+    do
+    {
     
-    printf("gender: ");
-    fgets(gender, sizeof(gender), stdin);
-    gender[strcspn(gender, "\n")] = '\0';
-    if(strcmp(identify, "patient") == 0)
-    {
-        printf("address: ");
-        fgets(address, sizeof(address), stdin);
-        address[strcspn(address, "\n")] = '\0';
-
-        printf("bloodgrp: ");
-        fgets(bloodgrp, sizeof(bloodgrp), stdin);
-        bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
-
-        sprintf(sql, "INSERT INTO patientdetail (name, age, bloodgrp, gender, phone, email, address) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');",name, age, bloodgrp, gender, phone, email, address);
-        ExecuteSql(sql);
         
-    }
-    else
-    {
-        printf("experience: ");
-        scanf("%d", &experience);
+        if(count > 0)
+        {
+            printf("\nHit enter to exit!\n");
+        }
+        printf("name: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = '\0';
+        if(strlen(name) == 0 && count > 0)
+        {
+            PatientDoctorManage(identify);
+        }
+        printf("age: ");
+        scanf("%d", &age);
         getchar();
+        printf("phone: ");
+        fgets(phone, sizeof(phone), stdin);
+        phone[strcspn(phone, "\n")] = '\0';
 
-        printf("specialization: ");
-        fgets(specialization, sizeof(specialization), stdin);
-        specialization[strcspn(specialization, "\n")] = 0;
-        sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');", name, age, phone, email, gender, experience, specialization);
-        ExecuteSql(sql);;
+        printf("email: ");
+        fgets(email, sizeof(email), stdin);
+        email[strcspn(email, "\n")] = '\0';
+        
+        printf("gender: ");
+        fgets(gender, sizeof(gender), stdin);
+        gender[strcspn(gender, "\n")] = '\0';
+        if(strlen(name) < 1 && strlen(phone) <1)
+        {
+            clear();
+            printf("Invalid!\n");
+            Add(identify);
+        }
+        if(strcmp(identify, "patient") == 0)
+        {
+            printf("address: ");
+            fgets(address, sizeof(address), stdin);
+            address[strcspn(address, "\n")] = '\0';
+
+            printf("bloodgrp: ");
+            fgets(bloodgrp, sizeof(bloodgrp), stdin);
+            bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
+
+            sprintf(sql, "INSERT INTO %s (name, age, bloodgrp, gender, phone, email, address) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');", table[0], name, age, bloodgrp, gender, phone, email, address);
+            ExecuteSql(sql);
+            
+        }
+        else
+        {
+            printf("experience: ");
+            scanf("%d", &experience);
+            getchar();
+
+            printf("specialization: ");
+            fgets(specialization, sizeof(specialization), stdin);
+            specialization[strcspn(specialization, "\n")] = 0;
+            sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');", name, age, phone, email, gender, experience, specialization);
+            ExecuteSql(sql);;
+            printf("Added successfully!\n");
+        }
+        sprintf(sqla, "INSERT INTO authentication (username1, username2) VALUES ('%s', '%s');", phone, email);
+        ExecuteSql(sqla);
+        count++;
         printf("Added successfully!\n");
-    }
-    sprintf(sqla, "INSERT INTO authentication (username1, username2) VALUES ('%s', '%s');", phone, email);
-    ExecuteSql(sqla);
+    }while(true);
     
     
 }
 
 void Delete(const char *identify)
 {
-    int more;
-    char username[50], sql[300], sql_[200];
-    printf("Enter username(phone or email): ");
-    getchar();
-    fgets(username, sizeof(username), stdin);
-    username[strcspn(username, "\n")] = '\0';
-    // clear();
+    int count = 0;
+    char username[50], sql[300], sql_[200], selected_table[20];
+    while(true)
+    {
+        if(count > 0)
+        {
+            printf("Hit enter to exit!\n");
+        }
+        printf("Enter username(phone or email): ");
+        fgets(username, sizeof(username), stdin);
+        username[strcspn(username, "\n")] = '\0';
 
-    if(strcmp(identify, "patient") == 0)
-    {
-        sprintf(sql, "DELETE FROM patientdetail WHERE phone = '%s' OR email = '%s';", username, username);
+        if(strlen(username) == 0 && count > 0)
+        {
+            PatientDoctorManage(identify);
+        }
+        else if(strlen(username) == 0)
+        {
+            printf("Invalid!\n");
+            Delete(identify);
+        }
+        if(strcmp(identify, "patient") == 0)
+        {
+            strcpy(selected_table, table[0]);
+        }
+        else if(strcmp(identify, "doctor") == 0)
+        {
+            strcpy(selected_table, table[1]);
+        }
+        printf("SQL querry: %s\n", sql);
+        sprintf(sql, "DELETE FROM %s WHERE phone = '%s' OR email = '%s';", selected_table, username, username);
         ExecuteSql(sql);
+        sprintf(sql_, "DELETE FROM %s WHERE username1 = '%s' OR username2 = '%s';", table[2], username, username);
+        ExecuteSql(sql_);
+        printf("Deleted successfully!\n");
+        count++;
     }
-    else if(strcmp(identify, "doctor") == 0)
-    {
-        sprintf(sql, "DELETE FROM doctordetail WHERE phone = '%s' OR email = '%s';", username, username);
-        ExecuteSql(sql);
-    }
-    sprintf(sql_, "DELETE FROM authentication WHERE username1 = '%s' OR username2 = '%s';", username, username);
-    ExecuteSql(sql_);
 }
 
 int callback(void *data, int no_fields, char **field_values, char **field_name)
@@ -544,6 +604,7 @@ void PatientDoctorLogin(const char *identify)
             sqlite3_close(db);
             exit(0);
         }
+        clear();
         printf("username: ");
         scanf("%49s", username);
         printf("password: ");
@@ -553,6 +614,7 @@ void PatientDoctorLogin(const char *identify)
         {
             if(strcmp(identify, "patient") == 0)
             {
+                clear();
                 PatientMenu(username);
             }
             else if(strcmp(identify, "doctor") == 0)
@@ -562,6 +624,7 @@ void PatientDoctorLogin(const char *identify)
         }
         else
         {
+            clear();
             printf("Invalid username and password!\n");
         }
         attempt++;
@@ -601,6 +664,8 @@ int IsAuthorize(const char *username, const char *password)
                 {
                     // char *update_pass, *confirm_pass;
                     do{
+                        clear();
+                        printf("At first you've to change password!\n");
                         printf("Type new password: ");
                         scanf("%s", update_pass);
                         printf("Retype new password: ");
@@ -611,6 +676,7 @@ int IsAuthorize(const char *username, const char *password)
                     // char *sql_;
                     sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[2], confirm_pass, username, username);
                     ExecuteSql(sql_);
+                    IsAuthorize(username, password);
                 }
                 return 1;
             }
