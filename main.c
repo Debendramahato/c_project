@@ -9,50 +9,11 @@
 
 //global variable
 sqlite3 *db;
-const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
+const char* table[4] = {"patientdetail", "doctordetail", "authentication", "appointmentdetail"};
 const char *services[10] = {"Anesthesiologists", "Cardiologists", "Endocrinologists", "Gastroenterologists", "General surgeons", "Nephrologists", "Neurologists", "Ophthalmologists", "Psychiatrists", "Radiologists"};
 
 //function to check authorize or not for patient and doctor
 int IsAuthorize(const char *username, const char *password);//done
-
-//Function to check patient login
-void PatientDoctorLogin(const char *identify);//done
- 
-//Function to check Admin login
-bool AdminLogin();//done
-
-//function for admin menu
-void AdminMenu();
-
-//function for patient menu
-void PatientMenu(const char *username);
-
-//function to book appointment
-void BookAppointment(int doctor_id, const char *patient_username);
-
-//function to reschedule appointment
-void RescheduleAppointment();
-
-//fucntion to cancel appointment
-void CancelAppointment();
-
-//function for doctor menu
-void DoctorMenu();
-
-//function to manage pharmacy 
-void PharmacyManage();
-
-//function to manage bills
-void BillManage();
-
-//function to manage patient details
-void PatientDoctorManage(const char *identify);//done
-
-//function to generate report
-void GenerateReport();
-
-//function to get all servecies
-void GetAllServices(const char *patient_usr);
 
 //function to add new entry
 void Add(const char *identify);//done
@@ -69,11 +30,14 @@ void Search(const char *identify);//done
 //function to fetch all patients and doctors detials
 void GetAll(const char *identify);//done
 
-//function to generate reports as pdf
-void GeneratePdf();
+//Function to check patient login
+void PatientDoctorLogin(const char *identify);//done
+ 
+//Function to check Admin login
+bool AdminLogin();//done
 
-//function to create table
-void CreateTable();//ongoing
+//function to manage patient details
+void PatientDoctorManage(const char *identify);//done
 
 //function to execute sql
 void ExecuteSql(const char *sql);//done
@@ -83,6 +47,55 @@ int callback(void *data, int no_fields, char **field_values, char **field_name);
 
 //function to clear creen
 void clear();//done
+
+//function to view appointment (this is for doctor)
+void ViewAppointment(const char *doctor_username);//done
+
+//function to mark ststus
+void MarkAppointmentStatus(const char *username);//done
+
+//function to book appointment
+void BookAppointment(const char *doctor_username, const char *patient_username);//done
+
+//function to reschedule appointment
+void RescheduleAppointment(const char *patient_username);//done
+
+//fucntion to cancel appointment
+void CancelAppointment(const char *patient_username);//done
+
+//function for doctor menu
+void DoctorMenu(const char *username);//done
+
+//function to get all servecies
+void GetAllServices(const char *patient_usr);//done
+
+
+
+
+
+//function to manage pharmacy 
+void PharmacyManage();
+
+//function to manage bills
+void BillManage();
+
+//function to generate report
+void GenerateReport();
+
+//function for patient menu
+void PatientMenu(const char *username);
+
+//function to generate reports as pdf
+void GeneratePdf();
+
+//function to create table
+void CreateTable();//ongoing
+
+//function for admin menu
+void AdminMenu();
+
+
+
 
 int main()
 {
@@ -144,7 +157,7 @@ int main()
 
 void CreateTable()
 {
-    const char *patient_table, *doctor_table, *user_pass;
+    const char *patient_table, *doctor_table, *appointment_table, *user_pass;
     
     patient_table = "CREATE TABLE IF NOT EXISTS patientdetail("
                     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -165,6 +178,17 @@ void CreateTable()
                     "gender TEXT NOT NULL,"
                     "experience INTEGER,"
                     "specialization TEXT);";
+
+    appointment_table = "CREATE TABLE IF NOT EXISTS appointmentdetail("
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    "patient_username TEXT NOT NULL,"
+                    "doctor_username TEXT NOT NULL,"
+                    "appointment_date TEXT NOT NULL,"
+                    "appointment_time TEXT NOT NULL,"
+                    "status TEXT DEFAULT 'scheduled',"
+                    "notes TEXT,"
+                    "FOREGIN KEY (patient_username) REFERENCES patientdetail(phone),"
+                    "FOREGIN KEY (doctor_username) REFERENCES doctordetail(phone));";
 
     user_pass = "CREATE TABLE IF NOT EXISTS authentication("
                 "username1 TEXT NOT NULL,"
@@ -513,7 +537,7 @@ void PatientDoctorLogin(const char *identify)
             }
             else if(strcmp(identify, "doctor") == 0)
             {
-                // DoctorMenu(db);
+                DoctorMenu(username);
             }
         }
         else
@@ -580,8 +604,8 @@ int IsAuthorize(const char *username, const char *password)
 
 void PatientMenu(const char *username)
 {
-    int choice, doctor_id;
-    char *sql, specialization_[50];
+    int choice;
+    char *sql, specialization_[50], doctor_username[20];
     printf("Please entry your choice:\n");
     printf("1.Get self detail\n2.Get all services with doctor\n3.Doctor Detail\n4.Book Appoinment\n5.Reschedule Appointment\n6.Cancel Appointment\n7.Exit");
     scanf("%d", &choice);
@@ -606,17 +630,17 @@ void PatientMenu(const char *username)
         break;
 
     case 4:
-        printf("Enter doctor ID: ");
-        scanf("%d", &doctor_id);
-        // BookAppointment(db, doctor_id, username);
+        printf("Enter doctor username(phone): ");
+        scanf("%20s", &doctor_username);
+        BookAppointment(doctor_username, username);
         break;
 
     case 5:
-        // RescheduleAppointment(db);
+        RescheduleAppointment(username);
         break;
 
     case 6:
-        //CancelAppointment(db);
+        CancelAppointment(username);
         break;
 
     case 7:
@@ -648,6 +672,100 @@ void GetAllServices(const char *patient_usr)
         // BookAppointment(db, doctor_id, patient_usr);
     }
 
+}
+
+void BookAppointment(const char *doctor_username, const char *patient_username)
+{
+    char date[20], time[20], status[20], notes[100], sql[300], *errMsg;
+
+    printf("Enter Date(YYYY-MM-DD): ");
+    scanf("%20s", &date);
+    date[strcspn(date, "\n")] = 0;
+
+    printf("Enter Time(HH:MM): ");
+    scanf("%20s", &time);
+    time[strcspn(time, "\n")] = 0;
+
+    sprintf("sql", "INSERT INTO appointmentdetail (patient_username, doctor_username, appointment_date, appointment_time) VALUES ('%s', '%s', '%s', '%s');", patient_username, doctor_username, date, time);
+    ExecuteSql(sql);
+
+    printf("Appointment booked successfully!\n");
+
+}
+
+void MarkAppointmentStatus(const char *username)
+{
+    char sql[300], note[200];
+
+    printf("Suggestion:\n");
+    fgets(sql, sizeof(note), stdin);
+    note[strcspn(note, "\n")] = 0;
+
+    sprintf(sql, "UPDATE %s SET status = 'completed', notes = '%s';", table[3], note);
+    ExecuteSql(sql);
+    DoctorMenu(username);
+
+}
+
+void ViewAppointment(const char *doctor_username)
+{
+    char sql[300];
+    sprintf(sql, "SELECT * FROM appointmentdetail WHERE doctor_username = '%s';", doctor_username);
+    ExecuteSql(sql);
+    DoctorMenu(doctor_username);
+}
+
+void DoctorMenu(const char *username)
+{
+    int choice;
+    printf("1.View Assigned Appointment.\n2.Mark As Completed\n3.Exit");
+    scanf("%d", choice);
+
+    do
+    {
+        switch (choice)
+        {
+        case 1:
+            clear();
+            ViewAppointment(username);
+            break;
+        case 2:
+            clear();
+            MarkAppointmentStatus(username);
+        case 3:
+            clear();
+            sqlite3_close(db);
+        }
+    } while (choice > 3);
+    
+}
+
+void RescheduleAppointment(const char *patient_username)
+{
+    char sql[256], date[20], time[20];
+
+    printf("Enter new date(YYYY-MM-DD): ");
+    scanf("%20s", &date);
+    date[strcspn(date, "\n")] = 0;
+
+    printf("Enter new time(HH:MM): ");
+    scanf("%20s", &time);
+    time[strcspn(time, "\n")] = 0;
+
+    sprintf(sql, "UPDATE %s SET appointment_date = '%s', appointment_time = '%s', status = 'rescheduled';", table[3], date, time);
+    ExecuteSql(sql);
+    clear();
+    PatientMenu(patient_username);
+}
+
+void CancelAppointment(const char *patient_username)
+{
+    char sql[256];
+
+    sprintf(sql, "DELETE FORM %s WHERE patient_username = '%s';", table[3], patient_username);
+    ExecuteSql(sql);
+    printf("Appointment calcel successfully\n");
+    PatientMenu(patient_username);
 }
 
 void clear()
