@@ -8,35 +8,36 @@
 #define AdminPass "admin"
 
 //global variable
+sqlite3 *db;
 const char* table[3] = {"patientdetail", "doctordetail", "authentication"};
 const char *services[10] = {"Anesthesiologists", "Cardiologists", "Endocrinologists", "Gastroenterologists", "General surgeons", "Nephrologists", "Neurologists", "Ophthalmologists", "Psychiatrists", "Radiologists"};
 
 //function to check authorize or not for patient and doctor
-int IsAuthorize(sqlite3 *db, const char *username, const char *password);//done
+int IsAuthorize(const char *username, const char *password);//done
 
 //Function to check patient login
-void PatientDoctorLogin(sqlite3 *db, const char *identify);//done
+void PatientDoctorLogin(const char *identify);//done
  
 //Function to check Admin login
 bool AdminLogin();//done
 
 //function for admin menu
-void AdminMenu(sqlite3 *db);
+void AdminMenu();
 
 //function for patient menu
-void PatientMenu(sqlite3 *db,  const char *username);
+void PatientMenu(const char *username);
 
 //function to book appointment
-void BookAppointment(sqlite3 *db, int doctor_id, const char *patient_username);
+void BookAppointment(int doctor_id, const char *patient_username);
 
 //function to reschedule appointment
-void RescheduleAppointment(sqlite3 *db);
+void RescheduleAppointment();
 
 //fucntion to cancel appointment
-void CancelAppointment(sqlite3 *db);
+void CancelAppointment();
 
 //function for doctor menu
-void DoctorMenu(sqlite3 *db);
+void DoctorMenu();
 
 //function to manage pharmacy 
 void PharmacyManage();
@@ -45,37 +46,37 @@ void PharmacyManage();
 void BillManage();
 
 //function to manage patient details
-void PatientDoctorManage(sqlite3 *db, const char *identify);//done
+void PatientDoctorManage(const char *identify);//done
 
 //function to generate report
 void GenerateReport();
 
 //function to get all servecies
-void GetAllServices(sqlite3 *db, const char *patient_usr);
+void GetAllServices(const char *patient_usr);
 
 //function to add new entry
-void Add(sqlite3 *db, const char *identify);//done
+void Add(const char *identify);//done
 
 //function to update info
-void Update(sqlite3 *db, const char *identify);//done
+void Update(const char *identify);//done
 
 //function to delete
-void Delete(sqlite3 *db, const char *identify);//done
+void Delete(const char *identify);//done
 
 //function to search
-void Search(sqlite3 *db, const char *identify);//done
+void Search(const char *identify);//done
 
 //function to fetch all patients and doctors detials
-void GetAll(sqlite3 *db, const char *identify);//done
+void GetAll(const char *identify);//done
 
 //function to generate reports as pdf
 void GeneratePdf();
 
 //function to create table
-void CreateTable(sqlite3 *db);//ongoing
+void CreateTable();//ongoing
 
 //function to execute sql
-void ExecuteSql(sqlite3 *db, const char *sql);//done
+void ExecuteSql(const char *sql);//done
 
 //function to call back
 int callback(void *data, int no_fields, char **field_values, char **field_name);//done
@@ -85,7 +86,7 @@ void clear();//done
 
 int main()
 {
-    sqlite3 *db;
+    
     // char zErrMsg = 0;
     int rc, choice;//rc = return code
 
@@ -103,7 +104,7 @@ int main()
         }
         else
         {
-            CreateTable(db);
+            CreateTable();
             // clear();
         }
     }
@@ -112,25 +113,27 @@ int main()
     switch (choice)
     {
     case 1:
-        PatientDoctorLogin(db, "patient");
+        PatientDoctorLogin("patient");
         break;
 
     case 2:
-        PatientDoctorLogin(db, "doctor");
+        PatientDoctorLogin("doctor");
         break;
 
     case 3:
         if(true/*AdminLogin()*/)
         {
-            AdminMenu(db);
+            AdminMenu();
         }
         else
-        {
+        {   
+            sqlite3_close(db);
             exit(0);
         }
         break;
 
     case 4:
+        sqlite3_close(db);
         exit(0);
         break;
     }
@@ -139,7 +142,7 @@ int main()
     return 0;
 }
 
-void CreateTable(sqlite3 *db)
+void CreateTable()
 {
     const char *patient_table, *doctor_table, *user_pass;
     
@@ -169,12 +172,12 @@ void CreateTable(sqlite3 *db)
                 "password TEXT DEFAULT 'user@123');";
     
 
-    ExecuteSql(db, patient_table);
-    ExecuteSql(db, doctor_table);
-    ExecuteSql(db, user_pass);
+    ExecuteSql(patient_table);
+    ExecuteSql(doctor_table);
+    ExecuteSql(user_pass);
 }
 
-void ExecuteSql(sqlite3 *db, const char *sql)
+void ExecuteSql(const char *sql)
 {
     char *ErrMsg = NULL;
     int rc;
@@ -227,7 +230,7 @@ bool AdminLogin()
     return true;
 }
 
-void AdminMenu(sqlite3 *db)
+void AdminMenu()
 {
     int choice;
     
@@ -238,11 +241,11 @@ void AdminMenu(sqlite3 *db)
     switch (choice)
     {
     case 1:
-        PatientDoctorManage(db, "patient");
+        PatientDoctorManage("patient");
         break;
 
     case 2:
-        PatientDoctorManage(db, "doctor");
+        PatientDoctorManage("doctor");
         break;
 
     case 3:
@@ -256,7 +259,7 @@ void AdminMenu(sqlite3 *db)
     }
 }
 
-void PatientDoctorManage(sqlite3 *db, const char *identify)
+void PatientDoctorManage(const char *identify)
 {
     int choice;
     clear();
@@ -267,27 +270,27 @@ void PatientDoctorManage(sqlite3 *db, const char *identify)
     switch (choice)
     {
     case 1:
-        Add(db, identify);
+        Add(identify);
         break;
 
     case 2:
-        Update(db, identify);
+        Update(identify);
         break;
 
     case 3:
-        Delete(db, identify);
+        Delete(identify);
         break;
     
     case 4:
-        Search(db, identify);
+        Search(identify);
         break;
     
     case 5:
-        GetAll(db, identify);
+        GetAll(identify);
         break;
 
     case 6:
-        AdminMenu(db);
+        AdminMenu();
         break;
 
     case 7:
@@ -298,7 +301,7 @@ void PatientDoctorManage(sqlite3 *db, const char *identify)
 
 }
 
-void Search(sqlite3 *db, const char *identify)
+void Search(const char *identify)
 {
     char sql[500], username[50], *selected_table;
 
@@ -316,10 +319,10 @@ void Search(sqlite3 *db, const char *identify)
         strcpy(selected_table, table[1]);
     }  
     sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", selected_table, username, username);
-    ExecuteSql(db, sql);
+    ExecuteSql(sql);
 }
 
-void GetAll(sqlite3 *db, const char *identify)
+void GetAll(const char *identify)
 {
     char *sql, *selected_talble;
 
@@ -332,10 +335,10 @@ void GetAll(sqlite3 *db, const char *identify)
         strcpy(selected_talble, table[1]);
     }
     sprintf(sql, "SELECT * FROM %s;", selected_talble);
-    ExecuteSql(db, sql);
+    ExecuteSql(sql);
 }
 
-void Update(sqlite3 *db, const char *identify)
+void Update(const char *identify)
 {
     int more, age, experience;
     char username[50], name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sql_[100];
@@ -378,7 +381,7 @@ void Update(sqlite3 *db, const char *identify)
         bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
 
         sprintf(sql, "UPDATE %s SET name = '%s', age = %d, bloodgrp = '%s', gender = '%s', phone = '%s', email = '%s', address = '%s' WHERE  phone = '%s' OR email = '%s';",table[0], name, age, bloodgrp, gender, phone, email, address, username, username);
-        ExecuteSql(db, sql);        
+        ExecuteSql(sql);        
     }
     else
     {
@@ -389,14 +392,14 @@ void Update(sqlite3 *db, const char *identify)
         fgets(specialization, sizeof(specialization), stdin);
         specialization[strcspn(specialization, "\n")] = '\0';
         sprintf(sql, "UPDATE %s SET name = '%s', age = %d, phone = '%s', email = '%s', gender = '%s', experience = '%s', specialization = '%s' WHERE phone = '%s' OR email = '%s';",table[1], name, age, phone, email, gender, experience, specialization, username, username);
-        ExecuteSql(db, sql);
+        ExecuteSql(sql);
     }
     sprintf(sql_, "UPDATE %s SET username1 = '%s', username2 = '%s' WHERE username1 = '%s' OR username2 = '%s';",table[2], phone, email, username, username);
-    ExecuteSql(db, sql_);
+    ExecuteSql(sql_);
     
 }
 
-void Add(sqlite3 *db, const char *identify)
+void Add(const char *identify)
 {
     int more, age, experience = 0;
     char name[50], phone[20], email[30], address[50], bloodgrp[10], gender[10], specialization[50], sql[500], sqla[100];
@@ -431,7 +434,7 @@ void Add(sqlite3 *db, const char *identify)
         bloodgrp[strcspn(bloodgrp, "\n")] = '\0';
 
         sprintf(sql, "INSERT INTO patientdetail (name, age, bloodgrp, gender, phone, email, address) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');",name, age, bloodgrp, gender, phone, email, address);
-        ExecuteSql(db, sql);
+        ExecuteSql(sql);
         
     }
     else
@@ -443,15 +446,15 @@ void Add(sqlite3 *db, const char *identify)
         fgets(specialization, sizeof(specialization), stdin);
         specialization[strcspn(specialization, "\n")] = '\0';
         sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', '%s', '%s');", name, age, phone, email, gender, experience, specialization);
-        ExecuteSql(db, sql);;
+        ExecuteSql(sql);;
     }
     sprintf(sqla, "INSERT INTO authentication (username1, username2) VALUES ('%s', '%s');", phone, email);
-    ExecuteSql(db, sqla);
+    ExecuteSql(sqla);
     
     
 }
 
-void Delete(sqlite3 *db, const char *identify)
+void Delete(const char *identify)
 {
     int more;
     char username[50], sql[300], sql_[200];
@@ -464,15 +467,15 @@ void Delete(sqlite3 *db, const char *identify)
     if(strcmp(identify, "patient") == 0)
     {
         sprintf(sql, "DELETE FROM patientdetail WHERE phone = '%s' OR email = '%s';", username, username);
-        ExecuteSql(db, sql);
+        ExecuteSql(sql);
     }
     else if(strcmp(identify, "doctor") == 0)
     {
         sprintf(sql, "DELETE FROM doctordetail WHERE phone = '%s' OR email = '%s';", username, username);
-        ExecuteSql(db, sql);
+        ExecuteSql(sql);
     }
     sprintf(sql_, "DELETE FROM authentication WHERE username1 = '%s' OR username2 = '%s';", username, username);
-    ExecuteSql(db, sql_);
+    ExecuteSql(sql_);
 }
 
 int callback(void *data, int no_fields, char **field_values, char **field_name)
@@ -485,7 +488,7 @@ int callback(void *data, int no_fields, char **field_values, char **field_name)
     return 0;
 }
 
-void PatientDoctorLogin(sqlite3 *db, const char *identify)
+void PatientDoctorLogin(const char *identify)
 { 
     char username[50], password[50];
     int attempt = 0;
@@ -502,11 +505,11 @@ void PatientDoctorLogin(sqlite3 *db, const char *identify)
         printf("password: ");
         scanf("%49s", password);
 
-        if(IsAuthorize(db, username, password))
+        if(IsAuthorize(username, password))
         {
             if(strcmp(identify, "patient") == 0)
             {
-                PatientMenu(db, username);
+                PatientMenu(username);
             }
             else if(strcmp(identify, "doctor") == 0)
             {
@@ -519,10 +522,10 @@ void PatientDoctorLogin(sqlite3 *db, const char *identify)
         }
         attempt++;
 
-    } while(!IsAuthorize(db, username, password));   
+    } while(!IsAuthorize(username, password));   
 }
 
-int IsAuthorize(sqlite3 *db, const char *username, const char *password)
+int IsAuthorize(const char *username, const char *password)
 {
     sqlite3_stmt *stmt;
     char sql[256], sql_[256], update_pass[256], confirm_pass[256];
@@ -563,7 +566,7 @@ int IsAuthorize(sqlite3 *db, const char *username, const char *password)
 
                     // char *sql_;
                     sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[2], confirm_pass, username, username);
-                    ExecuteSql(db, sql_);
+                    ExecuteSql(sql_);
                 }
                 return 1;
             }
@@ -575,7 +578,7 @@ int IsAuthorize(sqlite3 *db, const char *username, const char *password)
 
 }
 
-void PatientMenu(sqlite3 *db, const char *username)
+void PatientMenu(const char *username)
 {
     int choice, doctor_id;
     char *sql, specialization_[50];
@@ -587,11 +590,11 @@ void PatientMenu(sqlite3 *db, const char *username)
     {
     case 1:
         sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", table[0], username, username);
-        ExecuteSql(db, sql);
+        ExecuteSql(sql);
         break;
 
     case 2:
-        GetAllServices(db, username);
+        GetAllServices(username);
         break;
 
     case 3:
@@ -599,7 +602,7 @@ void PatientMenu(sqlite3 *db, const char *username)
         fgets(specialization_, sizeof(specialization_), stdin);
         specialization_[strcspn(specialization_, "\n")] = '\0';
         sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s' OR specialization = '%s';", table[1], specialization_, specialization_, specialization_);      
-        ExecuteSql(db, sql);
+        ExecuteSql(sql);
         break;
 
     case 4:
@@ -622,7 +625,7 @@ void PatientMenu(sqlite3 *db, const char *username)
     }
 }
 
-void GetAllServices(sqlite3 *db, const char *patient_usr)
+void GetAllServices(const char *patient_usr)
 {   
     int i, choice, doctor_id;
     char *sql, want;
@@ -634,7 +637,7 @@ void GetAllServices(sqlite3 *db, const char *patient_usr)
     scanf("%d", &choice);
     
     sprintf(sql, "SELECT * FROM %s WHERE specialization = '%s';", table[1], services[choice - 1]);
-    ExecuteSql(db, sql);
+    ExecuteSql(sql);
 
     printf("Want to book Appointment (y/n)?\n");
     scanf("%c", &want);
