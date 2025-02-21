@@ -117,10 +117,7 @@ int main()
     
     // DoctorMenu("9813653474");
 
-    printf("-----------------Who are you?-----------------\n");
-    printf("1.Patient\n2.Doctor\n3.Admin\n4.Exit\n");
-    scanf("%d", &choice);
-
+    
     rc = sqlite3_open("HMS.db", &db);
     if(choice < 4)
     {
@@ -136,34 +133,50 @@ int main()
         }
     }
     
-
-
-    switch (choice)
+    
+    while(true)
     {
-    case 1:
-        PatientDoctorLogin("patient");
-        break;
-
-    case 2:
-        PatientDoctorLogin("doctor");
-        break;
-
-    case 3:
-        if(/*AdminLogin()*/true)
+        
+        printf("-----------------Who are you?-----------------\n");
+        printf("1.Patient\n2.Doctor\n3.Admin\n4.Exit\n");
+        scanf("%d", &choice);
+        switch (choice)
         {
-            AdminMenu();
-        }
-        else
-        {   
-            sqlite3_close(db);
-            exit(0);
-        }
-        break;
+            case 1:
+                clear();
+                PatientDoctorLogin("patient");
+                break;
 
-    case 4:
-        sqlite3_close(db);
-        exit(0);
-        break;
+            case 2:
+                clear();
+                PatientDoctorLogin("doctor");
+                break;
+
+            case 3:
+                clear();
+                if(/*AdminLogin()*/true)
+                {
+                    AdminMenu();
+                }
+                else
+                {   
+                    clear();
+                    printf("Exiting.......\n");
+                    sqlite3_close(db);
+                    exit(0);
+                }
+                break;
+
+            case 4:
+                clear();
+                printf("Exiting.......\n");
+                sqlite3_close(db);
+                exit(0);
+                break;
+            default:
+                clear();
+                printf("Invlid!\n");
+        }
     }
     
 
@@ -274,8 +287,7 @@ bool AdminLogin()
 void AdminMenu()
 {
     int choice;
-    
-    clear();
+    getchar();
     printf("---------------Welcome Cheif---------------\n");
     printf("What do you want to do?\n");
     do
@@ -285,18 +297,23 @@ void AdminMenu()
         switch (choice)
         {
         case 1:
+            clear();
             PatientDoctorManage("patient");
             break;
 
         case 2:
+            clear();
             PatientDoctorManage("doctor");
             break;
 
         case 3:
+            clear();
             PharmacyManage();
             break;
 
         case 4:
+            clear();
+            printf("Exiting.......\n");
             sqlite3_close(db);
             exit(0);
             break;
@@ -309,7 +326,6 @@ void AdminMenu()
 void PatientDoctorManage(const char *identify)
 {
     int choice;
-    clear();
     printf("Choose what do you want to do?\n");
     do
     {
@@ -319,32 +335,40 @@ void PatientDoctorManage(const char *identify)
         switch (choice)
         {
         case 1:
+            clear();
             Add(identify);
             break;
 
         case 2:
+            clear();   
             Update(identify);
             break;
 
         case 3:
+            clear();
             Delete(identify);
             break;
         
         case 4:
+            clear();
             Search(identify);
             break;
         
         case 5:
+            clear();
             GetAll(identify);
             break;
 
         case 6:
+            clear();
             AdminMenu();
             break;
 
         case 7:
-            sqlite3_close(db);
-            exit(0);
+        clear();
+        printf("Exiting.......");
+        sqlite3_close(db);
+        exit(0);
             break;
         }
     } while (choice != 7);
@@ -353,12 +377,12 @@ void PatientDoctorManage(const char *identify)
 
 void Search(const char *identify)
 {
-    char sql[500], username[50], *selected_table;
+    char sql[500], username[50], selected_table[50];
 
     getchar();
     printf("username: ");
     fgets(username, sizeof(username), stdin);
-    username[strcspn(username, "\n")] = '\0';
+    username[strcspn(username, "\n")] = 0;
     if(strlen(username) == 0)
     {
         printf("Invalid!\n");
@@ -374,15 +398,15 @@ void Search(const char *identify)
     }  
     sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", selected_table, username, username);
     ExecuteSql(sql);
-    printf("Hit enter!\n");
+    printf("\nHit enter!\n");
     getchar();
+    clear();
     PatientDoctorManage(identify);
 }
 
 void GetAll(const char *identify)
 {
     char sql[100], selected_talble[50];
-
     if(strcmp(identify, "patient") == 0)
     {
         strcpy(selected_talble, table[0]);
@@ -393,6 +417,12 @@ void GetAll(const char *identify)
     }
     sprintf(sql, "SELECT * FROM %s;", selected_talble);
     ExecuteSql(sql);
+    printf("\nHit enter!\n");
+    getchar();
+    getchar();
+    clear();
+    PatientDoctorManage(identify);
+
 }
 
 void Update(const char *identify)
@@ -409,13 +439,18 @@ void Update(const char *identify)
         getchar();
         fgets(username, sizeof(username), stdin);
         username[strcspn(username, "\n")] = '\0';
-        if(strlen(username) == 0 && count > 0)
+        if(strlen(username) == 0)
         {
-            PatientDoctorManage(identify);
+            if(count > 0)
+            {
+                clear();
+                PatientDoctorManage(identify);
+            }
+            printf("Invalid!");
+            Update(identify);
         }
-        clear();
         
-        printf("---------------Enter new deatil---------------\n");
+        printf("\n---------------Enter new deatil---------------\n");
         printf("name: ");
         fgets(name, sizeof(name), stdin);
         name[strcspn(name, "\n")] = '\0';
@@ -435,12 +470,6 @@ void Update(const char *identify)
         printf("gender: ");
         fgets(gender, sizeof(gender), stdin);
         gender[strcspn(gender, "\n")] = '\0';
-        if(strlen(name) == 0 || strlen(phone) == 0)
-        {
-            clear();
-            printf("Invalid!");
-            Update(identify);
-        }
         if(strcmp(identify, "patient") == 0)
         {
             printf("address: ");
@@ -489,9 +518,15 @@ void Add(const char *identify)
         printf("name: ");
         fgets(name, sizeof(name), stdin);
         name[strcspn(name, "\n")] = '\0';
-        if(strlen(name) == 0 && count > 0)
-        {
-            PatientDoctorManage(identify);
+        if(strlen(name) == 0)
+        {   
+            if(count > 0)
+            {
+                clear();
+                PatientDoctorManage(identify);
+            }
+            printf("Invalid!\n");
+            Add(identify);
         }
         printf("age: ");
         scanf("%d", &age);
@@ -507,12 +542,6 @@ void Add(const char *identify)
         printf("gender: ");
         fgets(gender, sizeof(gender), stdin);
         gender[strcspn(gender, "\n")] = '\0';
-        if(strlen(name) < 1 && strlen(phone) <1)
-        {
-            clear();
-            printf("Invalid!\n");
-            Add(identify);
-        }
         if(strcmp(identify, "patient") == 0)
         {
             printf("address: ");
@@ -556,18 +585,23 @@ void Delete(const char *identify)
     {
         if(count > 0)
         {
-            printf("Hit enter to exit!\n");
+            printf("\nHit enter to exit!\n");
+        }
+        else
+        {
+            getchar();
         }
         printf("Enter username(phone or email): ");
         fgets(username, sizeof(username), stdin);
         username[strcspn(username, "\n")] = '\0';
 
-        if(strlen(username) == 0 && count > 0)
+        if(strlen(username) == 0)
         {
-            PatientDoctorManage(identify);
-        }
-        else if(strlen(username) == 0)
-        {
+            if(count > 0)
+            {
+                clear();
+                PatientDoctorManage(identify);
+            }
             printf("Invalid!\n");
             Delete(identify);
         }
@@ -579,7 +613,6 @@ void Delete(const char *identify)
         {
             strcpy(selected_table, table[1]);
         }
-        printf("SQL querry: %s\n", sql);
         sprintf(sql, "DELETE FROM %s WHERE phone = '%s' OR email = '%s';", selected_table, username, username);
         ExecuteSql(sql);
         sprintf(sql_, "DELETE FROM %s WHERE username1 = '%s' OR username2 = '%s';", table[2], username, username);
@@ -596,6 +629,7 @@ int callback(void *data, int no_fields, char **field_values, char **field_name)
     {
         printf("%s: %s\n", field_name[i], field_values[i]?field_values[i]:NULL);
     }
+    printf("\n");
     return 0;
 }
 
@@ -608,6 +642,7 @@ void PatientDoctorLogin(const char *identify)
         if(attempt == 5)
         {
             printf("Try agian leter! or contact to reception.\n");
+            printf("Exiting.......");
             sqlite3_close(db);
             exit(0);
         }
@@ -746,6 +781,8 @@ void PatientMenu(const char *username)
         break;
 
     case 7:
+        clear();
+        printf("Exiting.......");
         sqlite3_close(db);
         exit(0);
     }
@@ -844,7 +881,9 @@ void DoctorMenu(const char *username)
             MarkAppointmentStatus(username);
         case 3:
             clear();
+            printf("Exiting.......\n");
             sqlite3_close(db);
+            exit(0);
         }
     } while (choice > 3);
     
@@ -887,25 +926,36 @@ void PharmacyManage()
         printf("2. View Medicines\n");
         printf("3. Update Stock\n");
         printf("4. Delete Medicine\n");
-        printf("5. Exit\n");
+        printf("5. Goto previous menu\n");
+        printf("6. Exit\n");
         printf("Choose an option: ");
         scanf("%d", &choice);
 
         switch (choice) {
             case 1:
+                clear();
                 AddMedicine(); 
                 break;
             case 2:
+                clear();
                 ViewMedicines(); 
                 break;
             case 3:
+                clear();
                 UpdateStock();
                 break;
             case 4:
+                clear();
                 DeleteMedicine();
                 break;
             case 5:
+                clear();
+                AdminMenu();
+                break;
+            case 6:
                 printf("Exiting...\n");
+                sqlite3_close(db);
+                exit(0);
                 break;
             default:
             printf("Invalid choice!\n");
@@ -916,22 +966,44 @@ void PharmacyManage()
 void AddMedicine()
 {
     char name[50], sql[256];
-    int quantity;
+    int quantity, count = 0;
     float price;
+    clear();
+    while(true)
+    {
+        if(count != 0)
+        {
+            printf("\nHit enter to exit!\n");
+        }
+        getchar();
+        printf("Enter medicine name: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = 0;
+        if(strlen(name) == 0)
+        {
+            if(count > 0)
+            {
+                clear();
+                PharmacyManage();
+            }
+            printf("Invalid!");
+            AddMedicine();
 
-    printf("Enter medicine name: ");
-    scanf("%s", name);
-    printf("Enter quantity: ");
-    scanf("%d", &quantity);
-    printf("Enter price: ");
-    scanf("%f", &price);
+        }
+        
+        printf("Enter quantity: ");
+        scanf("%d", &quantity);
+        printf("Enter price: ");
+        scanf("%f", &price);
+        snprintf(sql, sizeof(sql), 
+                "INSERT INTO medicine (name, quantity, price) VALUES ('%s', %d, %.2f);", 
+                name, quantity, price);
 
-    snprintf(sql, sizeof(sql), 
-             "INSERT INTO medicine (name, quantity, price) VALUES ('%s', %d, %.2f);", 
-             name, quantity, price);
-
-    ExecuteSql(sql);
-    printf("Medicine added successfully!\n");
+        ExecuteSql(sql);
+        printf("Medicine added successfully!\n");
+        count++;
+    }
+    
 }
 
 void ViewMedicines() {
@@ -943,7 +1015,7 @@ void ViewMedicines() {
         return;
     }
 
-    printf("\nID | Name        | Quantity | Price\n");
+    printf("\nID | Name          | Quantity      | Price\n");
     printf("------------------------------------\n");
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -955,39 +1027,84 @@ void ViewMedicines() {
     }
 
     sqlite3_finalize(stmt);
+    PharmacyManage();
 }
 
-void UpdateStock() {
+void UpdateStock()
+{
     char name[50];
-    int quantity;
+    int quantity, count = 0;
     char sql[256];
+    clear();
+    while(true)
+    {
+        if(count != 0)
+        {
+        printf("\nHit enter to exit!\n");
+        }
+        getchar();
+        printf("Enter medicine name: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = 0;
+        if(strlen(name) == 0)
+        {
+            if(count > 0)
+            {
+                PharmacyManage();
+            }
+            clear();
+            printf("Invalid!");
+            UpdateStock();
+        }
+        printf("Enter new quantity: ");
+        scanf("%d", &quantity);
 
-    printf("Enter medicine name: ");
-    scanf("%s", name);
-    printf("Enter new quantity: ");
-    scanf("%d", &quantity);
+        snprintf(sql, sizeof(sql), 
+                "UPDATE %s SET quantity = %d WHERE name = '%s';", 
+                table[4], quantity, name);
 
-    snprintf(sql, sizeof(sql), 
-             "UPDATE %s SET quantity = %d WHERE name = '%s';", 
-             table[4], quantity, name);
-
-    ExecuteSql(sql);
-    printf("Stock updated successfully!\n");
+        ExecuteSql(sql);
+        printf("Stock updated successfully!\n");
+        count++;
+    }
 }
 
 void DeleteMedicine() {
-    char name[50];
-    char sql[256];
+    char name[50], sql[256];
+    int count = 0;
 
-    printf("Enter medicine name to delete: ");
-    scanf("%s", name);
+    while(true)
+    {
+        if(count != 0)
+        {
+            printf("\nHit enter to exit!\n");
+        }
+        else
+        {
+            getchar();
+        }
+        printf("Enter medicine name to delete: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = 0;
+        if(strlen(name) == 0)
+        {
+            if(count > 0)
+            {
+                clear();
+                PharmacyManage();
+            }
+            clear();
+            printf("Invalid!");
+            DeleteMedicine();
+        }
+        snprintf(sql, sizeof(sql), 
+                "DELETE FROM %s WHERE name = '%s';", 
+                table[4], name);
 
-    snprintf(sql, sizeof(sql), 
-             "DELETE FROM %s WHERE name = '%s';", 
-             table[4], name);
-
-    ExecuteSql(sql);
-    printf("Medicine deleted successfully!\n");
+        ExecuteSql(sql);
+        printf("Medicine deleted successfully!\n");
+        count++;
+    }
 }
 
 void clear()
