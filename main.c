@@ -114,6 +114,8 @@ int main()
     
     // char zErrMsg = 0;
     int rc, choice;//rc = return code
+    
+    // DoctorMenu("9813653474");
 
     printf("-----------------Who are you?-----------------\n");
     printf("1.Patient\n2.Doctor\n3.Admin\n4.Exit\n");
@@ -134,7 +136,6 @@ int main()
         }
     }
     
-    // GetAll("patient");
 
 
     switch (choice)
@@ -148,7 +149,7 @@ int main()
         break;
 
     case 3:
-        if(AdminLogin())
+        if(/*AdminLogin()*/true)
         {
             AdminMenu();
         }
@@ -218,6 +219,7 @@ void CreateTable()
     ExecuteSql(doctor_table);
     ExecuteSql(user_pass);
     ExecuteSql(appointment_table);
+    ExecuteSql(medicine);
 }
 
 void ExecuteSql(const char *sql)
@@ -248,23 +250,19 @@ bool AdminLogin()
         scanf("%s", username);
         printf("password: ");
         scanf("%s", password);
+        clear();
         if(strcmp(username, AdminUser) != 0)
         {
-            if(strcmp(password, AdminPass) != 0)
-            {
-                printf("\bWrong username and password!\n");
-            }
-            else
-            {
-                printf("/bWrong username\n");
-            }
+            printf("\bWrong username and password!\n");
         }
         else
         {
-            if(strcmp(username, AdminPass) != 0)
+            if(strcmp(password, AdminPass) == 0)
             {
-                printf("\bWrong password!\n");
+                return true;
             }
+            printf("\bWrong password!\n");
+            
         }
         
         attempt++;
@@ -280,27 +278,32 @@ void AdminMenu()
     clear();
     printf("---------------Welcome Cheif---------------\n");
     printf("What do you want to do?\n");
-    printf("1.Manage Patient\n2.Manage Doctor\n3.Manage Pharmacy\n4.exit\n");
-    scanf("%d", &choice);
-    switch (choice)
+    do
     {
-    case 1:
-        PatientDoctorManage("patient");
-        break;
+        printf("1.Manage Patient\n2.Manage Doctor\n3.Manage Pharmacy\n4.exit\n");
+        scanf("%d", &choice);
+        switch (choice)
+        {
+        case 1:
+            PatientDoctorManage("patient");
+            break;
 
-    case 2:
-        PatientDoctorManage("doctor");
-        break;
+        case 2:
+            PatientDoctorManage("doctor");
+            break;
 
-    case 3:
-        PharmacyManage();
-        break;
+        case 3:
+            PharmacyManage();
+            break;
 
-    case 4:
-        sqlite3_close(db);
-        exit(0);
-        break;
-    }
+        case 4:
+            sqlite3_close(db);
+            exit(0);
+            break;
+        }
+        clear();
+    }while (choice != 4);
+    
 }
 
 void PatientDoctorManage(const char *identify)
@@ -308,40 +311,43 @@ void PatientDoctorManage(const char *identify)
     int choice;
     clear();
     printf("Choose what do you want to do?\n");
-    printf("1.Add new\n2.Update info\n3.Delete record\n4.Get specific record\n5.Get detail of all\n6.Return Previoud Page\n7.exit\n");
-    scanf("%d", &choice);
-
-    switch (choice)
+    do
     {
-    case 1:
-        Add(identify);
-        break;
+        printf("1.Add new\n2.Update info\n3.Delete record\n4.Get specific record\n5.Get detail of all\n6.Return Previoud Page\n7.exit\n");
+        scanf("%d", &choice);
+        clear();
+        switch (choice)
+        {
+        case 1:
+            Add(identify);
+            break;
 
-    case 2:
-        Update(identify);
-        break;
+        case 2:
+            Update(identify);
+            break;
 
-    case 3:
-        Delete(identify);
-        break;
-    
-    case 4:
-        Search(identify);
-        break;
-    
-    case 5:
-        GetAll(identify);
-        break;
+        case 3:
+            Delete(identify);
+            break;
+        
+        case 4:
+            Search(identify);
+            break;
+        
+        case 5:
+            GetAll(identify);
+            break;
 
-    case 6:
-        AdminMenu();
-        break;
+        case 6:
+            AdminMenu();
+            break;
 
-    case 7:
-        sqlite3_close(db);
-        exit(0);
-        break;
-    }
+        case 7:
+            sqlite3_close(db);
+            exit(0);
+            break;
+        }
+    } while (choice != 7);
 
 }
 
@@ -475,9 +481,11 @@ void Add(const char *identify)
     
         
         if(count > 0)
-        {
+        {   
+            clear();
             printf("\nHit enter to exit!\n");
         }
+        printf("----------New Detail----------\n");
         printf("name: ");
         fgets(name, sizeof(name), stdin);
         name[strcspn(name, "\n")] = '\0';
@@ -528,11 +536,10 @@ void Add(const char *identify)
             printf("specialization: ");
             fgets(specialization, sizeof(specialization), stdin);
             specialization[strcspn(specialization, "\n")] = 0;
-            sprintf(sql, "INSERT INTO doctordetail(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');", name, age, phone, email, gender, experience, specialization);
+            sprintf(sql, "INSERT INTO %s(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');",table[0], name, age, phone, email, gender, experience, specialization);
             ExecuteSql(sql);;
-            printf("Added successfully!\n");
         }
-        sprintf(sqla, "INSERT INTO authentication (username1, username2) VALUES ('%s', '%s');", phone, email);
+        sprintf(sqla, "INSERT INTO %s (username1, username2) VALUES ('%s', '%s');",table[2], phone, email);
         ExecuteSql(sqla);
         count++;
         printf("Added successfully!\n");
@@ -664,19 +671,27 @@ int IsAuthorize(const char *username, const char *password)
                 {
                     // char *update_pass, *confirm_pass;
                     do{
-                        clear();
-                        printf("At first you've to change password!\n");
-                        printf("Type new password: ");
-                        scanf("%s", update_pass);
-                        printf("Retype new password: ");
-                        scanf("%s", confirm_pass);
+                        do{
+                            clear();
+                            update_pass[0] = '\0';
+                            confirm_pass[0] = '\0';
+                            printf("At first you've to change password!\n");
+                            printf("Type new password: ");
+                            scanf("%s", update_pass);
+                            printf("Retype new password: ");
+                            scanf("%s", confirm_pass);
+                            if(strcmp(update_pass, "user@123") == 0)
+                            {
+                                printf("New passwor can't be old password\n");
+                            }
+                        }while(strcmp(update_pass, "user@123") == 0);
                         clear();
                     }while(strcmp(update_pass, confirm_pass) != 0);
 
                     // char *sql_;
                     sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[2], confirm_pass, username, username);
                     ExecuteSql(sql_);
-                    IsAuthorize(username, password);
+                    printf("Password update successfully!\n");
                 }
                 return 1;
             }
@@ -693,7 +708,7 @@ void PatientMenu(const char *username)
     int choice;
     char *sql, specialization_[50], doctor_username[20];
     printf("Please entry your choice:\n");
-    printf("1.Get self detail\n2.Get all services with doctor\n3.Doctor Detail\n4.Book Appoinment\n5.Reschedule Appointment\n6.Cancel Appointment\n7.Exit");
+    printf("1.Get self detail\n2.Get all services with doctor\n3.Doctor Detail\n4.Book Appoinment\n5.Reschedule Appointment\n6.Cancel Appointment\n7.Exit\n");
     scanf("%d", &choice);
 
     switch (choice)
@@ -716,6 +731,7 @@ void PatientMenu(const char *username)
         break;
 
     case 4:
+        clear();
         printf("Enter doctor username(phone): ");
         scanf("%20s", &doctor_username);
         BookAppointment(doctor_username, username);
@@ -737,19 +753,27 @@ void PatientMenu(const char *username)
 
 void GetAllServices(const char *patient_usr)
 {   
-    int i, choice, doctor_id;
-    char *sql, want;
+    int i, choice, doctor_id, count = 0;
+    char sql[256], want;
+    clear();
     printf("We have these services, Please choose any services to get doctor of that particular services\n");
     for(i = 0; i < 10; i++)
     {
         printf("%d.%s\n", i + 1, services[i]);
+        count ++;
     }
     scanf("%d", &choice);
+    if(choice > count)
+    {
+        printf("Invalid!\n");
+        GetAllServices(patient_usr);
+    }
     
     sprintf(sql, "SELECT * FROM %s WHERE specialization = '%s';", table[1], services[choice - 1]);
     ExecuteSql(sql);
 
     printf("Want to book Appointment (y/n)?\n");
+    getchar();
     scanf("%c", &want);
     if(want == 'y' || want == 'Y')
     {
@@ -768,11 +792,11 @@ void BookAppointment(const char *doctor_username, const char *patient_username)
     scanf("%20s", &date);
     date[strcspn(date, "\n")] = 0;
 
-    printf("Enter Time(HH:MM): ");
+    printf("Enter Time(HH-MM): ");
     scanf("%20s", &time);
     time[strcspn(time, "\n")] = 0;
 
-    sprintf("sql", "INSERT INTO appointmentdetail (patient_username, doctor_username, appointment_date, appointment_time) VALUES ('%s', '%s', '%s', '%s');", patient_username, doctor_username, date, time);
+    sprintf(sql, "INSERT INTO %s (patient_username, doctor_username, appointment_date, appointment_time) VALUES ('%s', '%s', '%s', '%s');",table[3], patient_username, doctor_username, date, time);
     ExecuteSql(sql);
 
     printf("Appointment booked successfully!\n");
@@ -804,7 +828,7 @@ void ViewAppointment(const char *doctor_username)
 void DoctorMenu(const char *username)
 {
     int choice;
-    printf("1.View Assigned Appointment.\n2.Mark As Completed\n3.Exit");
+    printf("1.View Assigned Appointment.\n2.Mark As Completed\n3.Exit\n");
     scanf("%d", choice);
 
     do

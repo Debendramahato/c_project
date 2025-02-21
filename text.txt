@@ -8,4 +8,18 @@ search by username --> okay
 getall -- okay
 isauthorize --> okay
 patientdoctorlogin --> okay
+patientdoctormanage --> okay
+adminlogin --> okay
 
+
+not working
+------------
+get self detail(patient menu)
+doctordettail(patient menu)
+get all services(patient menu)
+bookappoinment(patient menu)
+reschedule(patient menu)
+cancel(patient menu)
+view asigned appointment(doctor menu)
+mark as done (doctor menu)
+delete(admin menu)
