@@ -713,10 +713,12 @@ bool IsAuthorize(const char *username, const char *password)
             {
                 if(strcmp(stored_pass, "user@123") == 0)
                 {
+                    clear();
+                    printf("At first you've to change password!\n");
                     char update_pass[50], confirm_pass[50];
                     do{
                         do{
-                            printf("At first you've to change password!\n");
+
                             printf("Type new password: ");
                             scanf("%s", update_pass);
                             printf("Retype new password: ");
@@ -724,10 +726,11 @@ bool IsAuthorize(const char *username, const char *password)
                             if(strcmp(update_pass, "user@123") == 0)
                             {   
                                 clear();
-                                printf("New passwor can't be old password\n\n");
+                                printf("New password can't be old password\n\n");
                             }
                         }while(strcmp(update_pass, "user@123") == 0);
                         clear();
+                        printf("Password is not matched\n\n");
                     }while(strcmp(update_pass, confirm_pass) != 0);
 
                     sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[2], confirm_pass, username, username);
