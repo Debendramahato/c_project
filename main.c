@@ -10,10 +10,10 @@
 //global variable
 sqlite3 *db;
 const char* table[5] = {"patientdetail", "doctordetail", "authentication", "appointmentdetail", "medicine"};
-const char *services[10] = {"Anesthesiologists", "Cardiologists", "Endocrinologists", "Gastroenterologists", "General surgeons", "Nephrologists", "Neurologists", "Ophthalmologists", "Psychiatrists", "Radiologists"};
+const char *services[10] = {"anesthesiologists", "cardiologists", "endocrinologists", "gastroenterologists", "general surgeons", "nephrologists", "neurologists", "ophthalmologists", "psychiatrists", "radiologists"};
 
 //function to check authorize or not for patient and doctor
-int IsAuthorize(const char *username, const char *password);//done
+bool IsAuthorize(const char *username, const char *password);//done
 
 //function to add new entry
 void Add(const char *identify);//done
@@ -93,8 +93,11 @@ void CreateTable();//done
 //function for admin menu
 void AdminMenu();//done
 
+//function to convert lower to upper case
+void toLowerCase(char *str);
 
-
+//function to view patientappointment
+void PatientAppointment(const char *username);
 
 
 //function to manage bills
@@ -113,9 +116,10 @@ int main()
 {
     
     // char zErrMsg = 0;
-    int rc, choice;//rc = return code
+    //rc = return code
+    int rc, choice;
     
-    // DoctorMenu("9813653474");
+    
 
     
     rc = sqlite3_open("HMS.db", &db);
@@ -132,8 +136,7 @@ int main()
             clear();
         }
     }
-    
-    
+
     while(true)
     {
         
@@ -154,7 +157,7 @@ int main()
 
             case 3:
                 clear();
-                if(/*AdminLogin()*/true)
+                if(AdminLogin())
                 {
                     AdminMenu();
                 }
@@ -214,7 +217,7 @@ void CreateTable()
                     "appointment_date TEXT NOT NULL,"
                     "appointment_time TEXT NOT NULL,"
                     "status TEXT DEFAULT 'scheduled',"
-                    "notes TEXT);";
+                    "notes TEXT DEFAULT '');";
 
     user_pass = "CREATE TABLE IF NOT EXISTS authentication("
                 "username1 TEXT NOT NULL,"
@@ -511,7 +514,6 @@ void Add(const char *identify)
         
         if(count > 0)
         {   
-            clear();
             printf("\nHit enter to exit!\n");
         }
         printf("----------New Detail----------\n");
@@ -556,7 +558,7 @@ void Add(const char *identify)
             ExecuteSql(sql);
             
         }
-        else
+        else if(strcmp(identify, "doctor") == 0)
         {
             printf("experience: ");
             scanf("%d", &experience);
@@ -565,12 +567,14 @@ void Add(const char *identify)
             printf("specialization: ");
             fgets(specialization, sizeof(specialization), stdin);
             specialization[strcspn(specialization, "\n")] = 0;
-            sprintf(sql, "INSERT INTO %s(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');",table[0], name, age, phone, email, gender, experience, specialization);
+            toLowerCase(specialization);
+            sprintf(sql, "INSERT INTO %s(name, age, phone, email, gender, experience, specialization) VALUES ('%s', %d, '%s', '%s', '%s', %d, '%s');",table[1], name, age, phone, email, gender, experience, specialization);
             ExecuteSql(sql);;
         }
         sprintf(sqla, "INSERT INTO %s (username1, username2) VALUES ('%s', '%s');",table[2], phone, email);
         ExecuteSql(sqla);
         count++;
+        clear();
         printf("Added successfully!\n");
     }while(true);
     
@@ -637,7 +641,7 @@ void PatientDoctorLogin(const char *identify)
 { 
     char username[50], password[50];
     int attempt = 0;
-    do
+    while(true)
     {
         if(attempt == 5)
         {
@@ -646,11 +650,13 @@ void PatientDoctorLogin(const char *identify)
             sqlite3_close(db);
             exit(0);
         }
-        clear();
+        // clear();
         printf("username: ");
         scanf("%49s", username);
+        username[strcspn(username, "\n")] = 0;
         printf("password: ");
         scanf("%49s", password);
+        password[strcspn(password, "\n")] = 0;
 
         if(IsAuthorize(username, password))
         {
@@ -658,10 +664,13 @@ void PatientDoctorLogin(const char *identify)
             {
                 clear();
                 PatientMenu(username);
+                break;
             }
             else if(strcmp(identify, "doctor") == 0)
             {
+                clear();
                 DoctorMenu(username);
+                break;
             }
         }
         else
@@ -671,10 +680,10 @@ void PatientDoctorLogin(const char *identify)
         }
         attempt++;
 
-    } while(!IsAuthorize(username, password));   
+    }
 }
 
-int IsAuthorize(const char *username, const char *password)
+bool IsAuthorize(const char *username, const char *password)
 {
     sqlite3_stmt *stmt;
     char sql[256], sql_[256], update_pass[256], confirm_pass[256];
@@ -683,7 +692,7 @@ int IsAuthorize(const char *username, const char *password)
     sprintf(sql, "SELECT * FROM %s;", table[2]);
 
     // rc --> return code
-    // -1 --> calculate the lenget of the string automatic
+    // -1 --> calculate the length of the string automatic
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
     if(rc != SQLITE_OK)
     {
@@ -692,48 +701,46 @@ int IsAuthorize(const char *username, const char *password)
         sqlite3_close(db);
         exit(0);
     }
-    while((rc = sqlite3_step(stmt) == SQLITE_ROW))
+    while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     {
         const char *stored_user1 = (const char *)sqlite3_column_text(stmt, 0);
         const char *stored_user2 = (const char *)sqlite3_column_text(stmt, 1);
         const char *stored_pass = (const char *)sqlite3_column_text(stmt, 2);
 
-        if(strcmp(username, stored_user1) == 0 || strcmp(username, stored_user2))
+        if(strcmp(username, stored_user1) == 0 || strcmp(username, stored_user2) == 0)
         {
             if(strcmp(password, stored_pass) == 0)
             {
                 if(strcmp(stored_pass, "user@123") == 0)
                 {
-                    // char *update_pass, *confirm_pass;
+                    char update_pass[50], confirm_pass[50];
                     do{
                         do{
-                            clear();
-                            update_pass[0] = '\0';
-                            confirm_pass[0] = '\0';
                             printf("At first you've to change password!\n");
                             printf("Type new password: ");
                             scanf("%s", update_pass);
                             printf("Retype new password: ");
                             scanf("%s", confirm_pass);
                             if(strcmp(update_pass, "user@123") == 0)
-                            {
-                                printf("New passwor can't be old password\n");
+                            {   
+                                clear();
+                                printf("New passwor can't be old password\n\n");
                             }
                         }while(strcmp(update_pass, "user@123") == 0);
                         clear();
                     }while(strcmp(update_pass, confirm_pass) != 0);
 
-                    // char *sql_;
                     sprintf(sql_, "UPDATE %s SET password = '%s' WHERE username1 = '%s' OR username2 = '%s';", table[2], confirm_pass, username, username);
                     ExecuteSql(sql_);
                     printf("Password update successfully!\n");
+                    return true;
                 }
-                return 1;
+                return true;
             }
-            return 0;
+            return false;
         }
     }
-    return 0;
+    return false;
 
 
 }
@@ -741,28 +748,43 @@ int IsAuthorize(const char *username, const char *password)
 void PatientMenu(const char *username)
 {
     int choice;
-    char *sql, specialization_[50], doctor_username[20];
+    char sql[256], specialization[50], doctor_username[20];
     printf("Please entry your choice:\n");
-    printf("1.Get self detail\n2.Get all services with doctor\n3.Doctor Detail\n4.Book Appoinment\n5.Reschedule Appointment\n6.Cancel Appointment\n7.Exit\n");
+    printf("1.Get self detail\n2.Get all services with doctor\n3.Doctor Detail\n4.Book Appoinment\n5.View my Appointment\n6.Reschedule Appointment\n7.Cancel Appointment\n8.Exit\n");
     scanf("%d", &choice);
 
     switch (choice)
     {
     case 1:
+        clear();
         sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s';", table[0], username, username);
         ExecuteSql(sql);
+        printf("\nHit enter!\n");
+        getchar();
+        getchar();
+        clear();
+        PatientMenu(username);
         break;
 
     case 2:
+        clear();
         GetAllServices(username);
         break;
 
     case 3:
+        clear();
         printf("Enter doctor specialization or username of doctor: ");
-        fgets(specialization_, sizeof(specialization_), stdin);
-        specialization_[strcspn(specialization_, "\n")] = '\0';
-        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s' OR specialization = '%s';", table[1], specialization_, specialization_, specialization_);      
+        getchar();
+        fgets(specialization, sizeof(specialization), stdin);
+        specialization[strcspn(specialization, "\n")] = '\0';
+        toLowerCase(specialization);
+        clear();
+        sprintf(sql, "SELECT * FROM %s WHERE phone = '%s' OR email = '%s' OR specialization = '%s';", table[1], specialization, specialization, specialization);      
         ExecuteSql(sql);
+        printf("\nHit Enter!");
+        getchar();
+        clear();
+        PatientMenu(username);
         break;
 
     case 4:
@@ -773,14 +795,21 @@ void PatientMenu(const char *username)
         break;
 
     case 5:
-        RescheduleAppointment(username);
+        clear();
+        PatientAppointment(username);
         break;
 
     case 6:
-        CancelAppointment(username);
+        clear();
+        RescheduleAppointment(username);
         break;
 
     case 7:
+        clear();
+        CancelAppointment(username);
+        break;
+
+    case 8:
         clear();
         printf("Exiting.......");
         sqlite3_close(db);
@@ -790,9 +819,8 @@ void PatientMenu(const char *username)
 
 void GetAllServices(const char *patient_usr)
 {   
-    int i, choice, doctor_id, count = 0;
-    char sql[256], want;
-    clear();
+    int i, choice, count = 0;
+    char sql[256], want, doctor_username[50];
     printf("We have these services, Please choose any services to get doctor of that particular services\n");
     for(i = 0; i < 10; i++)
     {
@@ -800,6 +828,7 @@ void GetAllServices(const char *patient_usr)
         count ++;
     }
     scanf("%d", &choice);
+    clear();
     if(choice > count)
     {
         printf("Invalid!\n");
@@ -814,10 +843,15 @@ void GetAllServices(const char *patient_usr)
     scanf("%c", &want);
     if(want == 'y' || want == 'Y')
     {
-        printf("Enter Doctor ID: ");
-        scanf("%d", &doctor_id);
-        // BookAppointment(db, doctor_id, patient_usr);
+        clear();
+        printf("Enter Doctor username(phone): ");
+        scanf("%49s", &doctor_username);
+        doctor_username[strcspn(doctor_username, "\n")] = 0;
+        clear();
+        BookAppointment(doctor_username, patient_usr);
     }
+    clear();
+    PatientMenu(patient_usr);
 
 }
 
@@ -836,20 +870,35 @@ void BookAppointment(const char *doctor_username, const char *patient_username)
     sprintf(sql, "INSERT INTO %s (patient_username, doctor_username, appointment_date, appointment_time) VALUES ('%s', '%s', '%s', '%s');",table[3], patient_username, doctor_username, date, time);
     ExecuteSql(sql);
 
-    printf("Appointment booked successfully!\n");
+    printf("\nAppointment booked successfully!\n");
+    printf("\nHit enter!\n");
+    getchar();
+    getchar();
+    clear();
+    PatientMenu(patient_username);
+
 
 }
 
 void MarkAppointmentStatus(const char *username)
 {
-    char sql[300], note[200];
+    char sql[300], note[200], patient_username[20];
 
-    printf("Suggestion:\n");
-    fgets(sql, sizeof(note), stdin);
-    note[strcspn(note, "\n")] = 0;
+    printf("Enter patient username(phone): ");
+    getchar();
+    fgets(patient_username, sizeof(patient_username), stdin);
+    patient_username[strcspn(patient_username, "\n")] = 0;
 
-    sprintf(sql, "UPDATE %s SET status = 'completed', notes = '%s';", table[3], note);
+    printf("Suggestion: ");
+    fgets(note, sizeof(note), stdin);
+    note[strcspn(note, "\n")] = '\0';
+
+    sprintf(sql, "UPDATE %s SET notes = '%s', status = 'completed' WHERE patient_username = '%s' AND doctor_username = '%s';", table[3], note, patient_username, username);
     ExecuteSql(sql);
+    printf("\nMarked complete successfully\n");
+    printf("\nHit enter!");
+    getchar();
+    clear();
     DoctorMenu(username);
 
 }
@@ -857,19 +906,35 @@ void MarkAppointmentStatus(const char *username)
 void ViewAppointment(const char *doctor_username)
 {
     char sql[300];
-    sprintf(sql, "SELECT * FROM appointmentdetail WHERE doctor_username = '%s';", doctor_username);
+    sprintf(sql, "SELECT * FROM %s WHERE doctor_username = '%s' AND (status = 'scheduled' OR status = 'rescheduled');", table[3], doctor_username);
     ExecuteSql(sql);
+    printf("\nHit enter!");
+    getchar();
+    getchar();
+    clear();
     DoctorMenu(doctor_username);
+}
+
+void PatientAppointment(const char *username)
+{
+    char sql[300];
+    sprintf(sql, "SELECT * FROM %s WHERE patient_username = '%s' AND (status != 'canlced' OR status != 'completed');", table[3], username);
+    ExecuteSql(sql);
+    printf("\nHit enter!");
+    getchar();
+    getchar();
+    clear();
+    PatientMenu(username);
 }
 
 void DoctorMenu(const char *username)
 {
     int choice;
-    printf("1.View Assigned Appointment.\n2.Mark As Completed\n3.Exit\n");
-    scanf("%d", choice);
-
+    
     do
     {
+        printf("1.View Assigned Appointment.\n2.Mark As Completed\n3.Exit\n");
+        scanf("%d", &choice);
         switch (choice)
         {
         case 1:
@@ -884,8 +949,11 @@ void DoctorMenu(const char *username)
             printf("Exiting.......\n");
             sqlite3_close(db);
             exit(0);
+        default:
+            clear();
+            printf("Invalid!");
         }
-    } while (choice > 3);
+    } while (choice != 3);
     
 }
 
@@ -901,8 +969,13 @@ void RescheduleAppointment(const char *patient_username)
     scanf("%20s", &time);
     time[strcspn(time, "\n")] = 0;
 
-    sprintf(sql, "UPDATE %s SET appointment_date = '%s', appointment_time = '%s', status = 'rescheduled';", table[3], date, time);
+    sprintf(sql, "UPDATE %s SET appointment_date = '%s', appointment_time = '%s', status = 'rescheduled'WHERE patient_username = '%s';", table[3], date, time, patient_username);
     ExecuteSql(sql);
+
+    printf("\nAppointment rescheduled successully.\n");
+    printf("\nHit enter!\n");
+    getchar();
+    getchar();
     clear();
     PatientMenu(patient_username);
 }
@@ -911,9 +984,13 @@ void CancelAppointment(const char *patient_username)
 {
     char sql[256];
 
-    sprintf(sql, "DELETE FORM %s WHERE patient_username = '%s';", table[3], patient_username);
+    sprintf(sql, "DELETE FROM %s WHERE patient_username = '%s';", table[3], patient_username);
     ExecuteSql(sql);
-    printf("Appointment calcel successfully\n");
+    printf("\nAppointment calcel successfully\n");
+    printf("\nHit enter!\n");
+    getchar();
+    getchar();
+    clear();
     PatientMenu(patient_username);
 }
 
@@ -1104,6 +1181,14 @@ void DeleteMedicine() {
         ExecuteSql(sql);
         printf("Medicine deleted successfully!\n");
         count++;
+    }
+}
+
+void toLowerCase(char *str) {
+    for (int i = 0; str[i]; i++) {
+        if (str[i] >= 'A' && str[i] <= 'Z') {
+            str[i] += 32; // Convert uppercase to lowercase
+        }
     }
 }
 
